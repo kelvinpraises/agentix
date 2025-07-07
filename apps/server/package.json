@@ -1,0 +1,28 @@
+{
+  "name": "agentix-server",
+  "version": "1.0.0",
+  "description": "agentix agent meastro",
+  "license": "MIT",
+  "author": "kelvinpraises",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx index.ts --watch",
+    "build": "npx tsc",
+    "start": "node dist/index.js"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "tsx": "^4.20.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.10"
+  }
+}
