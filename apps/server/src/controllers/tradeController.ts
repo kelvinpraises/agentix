@@ -1,3 +1,5 @@
+import { Request, Response } from "express";
+
 import {
   addUserAction,
   addUserFeedback,
@@ -5,7 +7,6 @@ import {
   getTradeActionById,
   interruptTradeAction,
 } from "@/services/trade-service";
-import { Request, Response } from "express";
 
 const tradeController = {
   async getTradeDetails(req: Request, res: Response) {
