@@ -4,25 +4,39 @@
   "description": "agentix agent meastro",
   "license": "MIT",
   "author": "kelvinpraises",
-  "main": "index.ts",
+  "main": "src/server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx index.ts --watch",
+    "dev": "tsx src/server.ts --watch",
     "build": "npx tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/server.js"
   },
   "engines": {
     "node": ">=20.9.0"
   },
   "dependencies": {
+    "@mastra/core": "^0.10.10",
+    "@mastra/loggers": "^0.10.3",
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
-    "tsx": "^4.20.3"
+    "jsonwebtoken": "^9.0.2",
+    "ky": "^1.8.1",
+    "kysely": "^0.28.2",
+    "node-cron": "^4.2.0",
+    "ollama-ai-provider": "^1.2.0",
+    "tsx": "^4.20.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/node": "^24.0.10"
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.0.10",
+    "@types/node-cron": "^3.0.11"
   }
 }
