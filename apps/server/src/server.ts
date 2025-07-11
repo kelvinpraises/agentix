@@ -3,12 +3,12 @@ import dotenv from "dotenv";
 import express from "express";
 
 // Import routes
-import { errorHandler } from "@/middleware/errorHandler";
-import authRoutes from "@/routes/auth";
-import policyRoutes from "@/routes/policy";
-import portfolioRoutes from "@/routes/portfolio";
-import profileRoutes from "@/routes/profile";
-import tradeRoutes from "@/routes/trade";
+import { errorHandler } from "@/api/middleware/errorHandler";
+import authRoutes from "@/api/routes/auth";
+import policyRoutes from "@/api/routes/policy";
+import portfolioRoutes from "@/api/routes/portfolio";
+import profileRoutes from "@/api/routes/profile";
+import tradeRoutes from "@/api/routes/trade";
 
 dotenv.config();
 

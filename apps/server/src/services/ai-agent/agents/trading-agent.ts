@@ -1,9 +1,9 @@
 import { Agent } from "@mastra/core";
 
-import { model } from "@/services/mastara/config";
-import { executionTools } from "@/services/mastara/tools/execution-tools";
-import { insightTools } from "@/services/mastara/tools/insight-tools";
-import { journalTools } from "@/services/mastara/tools/journal-tools";
+import { model } from "@/services/ai-agent/config";
+import { executionTools } from "@/services/ai-agent/tools/execution-tools";
+import { insightTools } from "@/services/ai-agent/tools/insight-tools";
+import { journalTools } from "@/services/ai-agent/tools/journal-tools";
 
 export const tradingAgent = new Agent({
   name: "tradingAgent",

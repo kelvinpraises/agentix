@@ -6,7 +6,7 @@ import {
   getJournalForTradeAction,
   getTradeActionById,
   interruptTradeAction,
-} from "@/services/trade-service";
+} from "@/services/trading/trade-service";
 
 const tradeController = {
   async getTradeDetails(req: Request, res: Response) {

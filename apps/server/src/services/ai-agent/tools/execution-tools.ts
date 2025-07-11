@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 import { journalTools } from "./journal-tools";
-import { sendTradeProposal } from "@/services/notification-service";
+import { sendTradeProposal } from "@/services/core/notification-service";
 import {
   EnterPositionProposal,
   ExitPositionProposal,

@@ -1,7 +1,6 @@
-
 import { createTool } from "@mastra/core";
 import { z } from "zod";
-import { createJournalEntry } from "@/services/trade-service";
+import { createJournalEntry } from "@/services/core/journal-service";
 import { JournalEntryType, JournalEntryContent } from "@/types/journal";
 
 export const journalTools = {

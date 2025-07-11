@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { Policy, PolicyUpdate } from "@/models/Policy";
-import { policyService } from "@/services/policy-service";
+import { policyService } from "@/services/user/policy-service";
 
 interface PolicyResponse extends Policy {}
 

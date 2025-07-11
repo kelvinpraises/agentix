@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import policyController from "@/controllers/policyController";
-import { protect } from "@/middleware/auth";
-import { validate } from "@/middleware/validation";
+import policyController from "@/api/controllers/policyController";
+import { protect } from "@/api/middleware/auth";
+import { validate } from "@/api/middleware/validation";
 
 const router = Router();
 

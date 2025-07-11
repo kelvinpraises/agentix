@@ -1,6 +1,6 @@
 import cron from "node-cron";
 
-// import { aiService } from '@/services/ai-service';
+import { mastra } from "@/services/ai-agent";
 import { db } from "@/database/turso-connection";
 
 export const cronService = {

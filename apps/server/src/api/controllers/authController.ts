@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import { User } from "@/models/User";
-import { authService } from "@/services/auth-service";
+import { authService } from "@/services/user/auth-service";
 import { sanitizeUser } from "@/utils/user";
 
 interface RegisterRequestBody {
@@ -42,9 +42,10 @@ const authController = {
         wallet_address_eth: ethWalletAddress,
         wallet_address_sol: solWalletAddress,
       });
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
-        expiresIn: "24h",
-      });
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!,
+        {
+          expiresIn: "24h",
+        });
       res.status(201).json({ token, user: sanitizeUser(user) });
     } catch (error) {
       res.status(500).json({ error: "An error occurred while registering the user." });
