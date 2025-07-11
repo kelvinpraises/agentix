@@ -159,19 +159,65 @@ export interface PortfolioRebalanceContent {
 export interface TradeExecutionContent {
   contentType: "TRADE_EXECUTION";
   message: string;
-  trade_details: {
-    pair: string;
-    amount: string;
-    expected_tokens: string;
-    slippage: string;
-    network: string;
-    dex: string;
-    strategy: string;
-    risk_level: "low" | "medium" | "high";
-  };
+  trade_details: TradeProposal;
   status: "pending" | "approved" | "rejected" | "executing" | "completed" | "failed";
-  auto_execute_in?: number; // seconds
+  auto_execute_in?: number;
   confidence_score: number;
+}
+
+export type TradeProposal = 
+  | EnterPositionProposal
+  | ExitPositionProposal
+  | AdjustPositionProposal
+  | SwapProposal;
+
+export interface EnterPositionProposal {
+  proposalType: "ENTER_POSITION";
+  pair: string;
+  fromToken: string;
+  toToken: string;
+  amount: string;
+  chain: "ethereum" | "solana";
+  dex: string;
+  strategy: string;
+  slippagePercent: number;
+  stopLossPrice?: number;
+  takeProfitPrice?: number;
+  riskLevel: "low" | "medium" | "high";
+}
+
+export interface ExitPositionProposal {
+  proposalType: "EXIT_POSITION";
+  positionId: string;
+  exitAmount: string; // e.g., "100%" or "0.5 SOL" or "$500"
+  exitType: "FULL" | "PARTIAL" | "STOP_LOSS" | "TAKE_PROFIT";
+  chain: "ethereum" | "solana";
+  dex: string;
+  strategy: string;
+  slippagePercent: number;
+  riskLevel: "low" | "medium" | "high";
+}
+
+export interface AdjustPositionProposal {
+  proposalType: "ADJUST_POSITION";
+  positionId: string;
+  adjustmentType: "STOP_LOSS" | "TAKE_PROFIT" | "BOTH";
+  newStopLossPrice?: number;
+  newTakeProfitPrice?: number;
+  reason: string;
+  riskLevel: "low" | "medium" | "high";
+}
+
+export interface SwapProposal {
+  proposalType: "SWAP";
+  fromToken: string;
+  toToken: string;
+  amount: string;
+  chain: "ethereum" | "solana";
+  dex: string;
+  strategy: string;
+  slippagePercent: number;
+  riskLevel: "low" | "medium" | "high";
 }
 
 export interface PositionMonitorContent {

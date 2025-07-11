@@ -3,11 +3,12 @@ import { Agent } from "@mastra/core";
 import { model } from "@/services/mastara/config";
 import { executionTools } from "@/services/mastara/tools/execution-tools";
 import { insightTools } from "@/services/mastara/tools/insight-tools";
+import { journalTools } from "@/services/mastara/tools/journal-tools";
 
 export const tradingAgent = new Agent({
   name: "tradingAgent",
   description: "AI-powered trading agent that beats inflation",
-  tools: { ...insightTools, ...executionTools },
+  tools: { ...insightTools, ...executionTools, ...journalTools },
   model,
   instructions: `
     You are an expert trading agent focused on beating inflation through smart cryptocurrency trading.
