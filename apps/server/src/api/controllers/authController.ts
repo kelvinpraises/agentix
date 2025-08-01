@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 import { User } from "@/models/User";
 import { authService } from "@/services/user/auth-service";
-import { sanitizeUser } from "@/utils/user";
+import { sanitizeUser } from "@/library/utils/user";
 
 interface RegisterRequestBody {
   email: string;
