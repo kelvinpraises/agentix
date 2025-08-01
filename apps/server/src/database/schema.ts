@@ -1,6 +1,7 @@
 import { ColumnType, Generated, JSONColumnType } from "kysely";
 
 import { JournalEntryContent, JournalEntryType } from "@/types/journal";
+import { PolicyDocument } from "@/types/policy";
 
 export interface UsersTable {
   id: Generated<number>;
@@ -15,7 +16,7 @@ export interface UsersTable {
 export interface UserPoliciesTable {
   id: Generated<number>;
   user_id: number;
-  policy_document: JSONColumnType<{ [key: string]: any }>;
+  policy_document: JSONColumnType<PolicyDocument>;
   version: number;
   is_active: boolean;
   ai_critique: string | null;
@@ -39,6 +40,15 @@ export interface TradeActionsTable {
   summary: string | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
+export interface TradeStrategiesTable {
+  id: Generated<number>;
+  trade_action_id: number;
+  strategy_type: string;
+  strategy_params_json: JSONColumnType<Record<string, any>>;
+  is_active: boolean;
+  created_at: ColumnType<Date, string | undefined, never>;
 }
 
 export interface JournalEntriesTable {
@@ -68,6 +78,7 @@ export interface DB {
   users: UsersTable;
   user_policies: UserPoliciesTable;
   trade_actions: TradeActionsTable;
+  trade_strategies: TradeStrategiesTable;
   journal_entries: JournalEntriesTable;
   portfolio_snapshots: PortfolioSnapshotsTable;
 }
