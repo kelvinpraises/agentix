@@ -3,3 +3,13 @@
 
 Thumbs.db
 **/Thumbs.db
+**/.claude
+**/CLAUDE.md
+**/GEMINI.md
+**/.kiro
+**/.dfx
+.env.**
+
+# Build outputs
+**/dist/
+**/build/
