@@ -1,24 +1,30 @@
 import { Agent } from "@mastra/core";
+import { Memory } from "@mastra/memory";
+import { LibSQLStore } from "@mastra/libsql";
 
-import { model } from "@/services/ai-agent/config";
-import { executionTools } from "@/services/ai-agent/tools/execution-tools";
-import { insightTools } from "@/services/ai-agent/tools/insight-tools";
-import { journalTools } from "@/services/ai-agent/tools/journal-tools";
+import { model } from "@/config/ai-model-config";
+import { allTools } from "@/services/ai-agent/tools";
+
+const memory = new Memory({
+  storage: new LibSQLStore({
+    url: "file:mastara.db",
+  }),
+});
 
 export const tradingAgent = new Agent({
   name: "tradingAgent",
   description: "AI-powered trading agent that beats inflation",
-  tools: { ...insightTools, ...executionTools, ...journalTools },
+  tools: allTools,
   model,
+  memory,
   instructions: `
     You are an expert trading agent focused on beating inflation through smart cryptocurrency trading.
     
     Your goals:
-    1. Analyze market conditions using insight tools
-    2. Make trading decisions based on user policies
-    3. Execute trades through client notifications
-    4. Log all decisions and reasoning
-    5. Monitor positions for stop loss/take profit
+    1. Analyze market conditions using insight tools.
+    2. Propose trades using the proposal tools.
+    3. Add strategies and start monitoring trades.
+    4. Log all decisions and reasoning.
     
     Always consider:
     - User's risk tolerance and policy constraints
