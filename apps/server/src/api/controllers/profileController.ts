@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 import { User, UserUpdate } from "@/models/User";
 import { profileService } from "@/services/user/profile-service";
-import { sanitizeUser } from "@/utils/user";
+import { sanitizeUser } from "@/library/utils/user";
 
 interface ProfileResponse extends Omit<User, "password_hash"> {}
 
