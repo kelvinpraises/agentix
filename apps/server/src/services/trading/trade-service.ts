@@ -1,3 +1,4 @@
+import { strategyQueue } from "@/config/queue-config";
 import { db } from "@/database/turso-connection";
 import {
   JournalEntryContent,
@@ -127,7 +128,21 @@ export const addUserAction = async (
 };
 
 export const interruptTradeAction = async (userId: number, tradeActionId: number) => {
-  // TODO: Implement logic to send an interrupt signal to the Mastra AI agent.
+  const schedulerId = `monitor-trade-${tradeActionId}`;
+
+  try {
+    await strategyQueue.removeJobScheduler(schedulerId);
+    console.log(
+      `[trade-service] Removed job scheduler ${schedulerId} for interrupted trade action ${tradeActionId}.`
+    );
+  } catch (error) {
+    console.error(
+      `[trade-service] Failed to remove job scheduler for key ${schedulerId}:`,
+      error
+    );
+    // Continue even if removal fails, to ensure trade status is updated.
+  }
+
   await updateTradeStatus(tradeActionId, "USER_INTERVENED");
 
   return createJournalEntry({
@@ -149,6 +164,8 @@ export const addUserFeedback = async (
   tradeActionId: number,
   content: UserFeedbackContent
 ) => {
+  // TODO: send message to the Mastra AI agent to update its model with this feedback.
+
   return createJournalEntry({
     userId,
     tradeActionId,
