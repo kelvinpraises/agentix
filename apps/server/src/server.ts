@@ -2,13 +2,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 
-// Import routes
 import { errorHandler } from "@/api/middleware/errorHandler";
 import authRoutes from "@/api/routes/auth";
 import policyRoutes from "@/api/routes/policy";
 import portfolioRoutes from "@/api/routes/portfolio";
 import profileRoutes from "@/api/routes/profile";
 import tradeRoutes from "@/api/routes/trade";
+import cronService from "@/services/core/cron-service";
 
 dotenv.config();
 
@@ -36,4 +36,6 @@ if (!process.env.BACKEND_PORT) {
 
 app.listen(BACKEND_PORT, () => {
   console.log(`🤖 [agentix-server]: running at http://localhost:${BACKEND_PORT}`);
+  // Start the master cron service
+  cronService.start();
 });
