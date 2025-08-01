@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 
+import { aiAgentService } from "@/services/ai-agent";
 import {
   addUserAction,
   addUserFeedback,
@@ -66,21 +67,32 @@ const tradeController = {
 
   async interruptTrade(req: Request, res: Response) {
     if (!req.user?.id) {
-      res.status(401).json({ error: 'Unauthorized' })
-      return
+      res.status(401).json({ error: "Unauthorized" });
+      return;
     }
 
-    const { tradeId } = req.params
-    const userId = req.user.id
+    const { tradeId } = req.params;
+    const userId = req.user.id;
 
     try {
-      await interruptTradeAction(userId, parseInt(tradeId, 10))
-      res.status(200).json({ message: 'Trade action interrupted successfully.' })
-      return
+      // First, log the user's intent to interrupt.
+      await interruptTradeAction(userId, parseInt(tradeId, 10));
+
+      // Then, signal the AI agent service to stop the analysis.
+      const wasRunning = aiAgentService.interruptAnalysis(parseInt(tradeId, 10));
+
+      if (wasRunning) {
+        res.status(200).json({ message: "Trade analysis interrupted successfully." });
+      } else {
+        res
+          .status(404)
+          .json({ error: "No active analysis found for this trade to interrupt." });
+      }
+      return;
     } catch (error) {
-      console.error('Error interrupting trade action:', error)
-      res.status(500).json({ error: 'Internal server error' })
-      return
+      console.error("Error interrupting trade action:", error);
+      res.status(500).json({ error: "Internal server error" });
+      return;
     }
   },
 
