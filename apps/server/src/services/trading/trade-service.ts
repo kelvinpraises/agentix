@@ -9,14 +9,72 @@ import {
 
 // == Trade Action Functions ==
 
+// Helper function to get sector ID from trade action
+export const getSectorIdFromTradeAction = async (tradeActionId: number) => {
+  const result = await db
+    .selectFrom("trade_actions")
+    .innerJoin("orbs", "orbs.id", "trade_actions.orb_id")
+    .where("trade_actions.id", "=", tradeActionId)
+    .select("orbs.sector_id")
+    .executeTakeFirst();
+  
+  return result?.sector_id;
+};
+
+// Get trades by sector
+export const getTradesBySector = async (sectorId: number, userId: number) => {
+  return await db
+    .selectFrom("trade_actions")
+    .innerJoin("orbs", "orbs.id", "trade_actions.orb_id")
+    .innerJoin("sectors", "sectors.id", "orbs.sector_id")
+    .where("sectors.id", "=", sectorId)
+    .where("sectors.user_id", "=", userId)
+    .select([
+      "trade_actions.id",
+      "trade_actions.orb_id",
+      "trade_actions.trade_type", 
+      "trade_actions.status",
+      "trade_actions.is_active",
+      "trade_actions.summary",
+      "trade_actions.created_at",
+      "trade_actions.updated_at",
+      "orbs.name as orb_name",
+      "orbs.chain as orb_chain"
+    ])
+    .orderBy("trade_actions.created_at", "desc")
+    .execute();
+};
+
+// Get trades by orb
+export const getTradesByOrb = async (orbId: number, userId: number) => {
+  return await db
+    .selectFrom("trade_actions")
+    .innerJoin("orbs", "orbs.id", "trade_actions.orb_id")
+    .innerJoin("sectors", "sectors.id", "orbs.sector_id")
+    .where("trade_actions.orb_id", "=", orbId)
+    .where("sectors.user_id", "=", userId)
+    .select([
+      "trade_actions.id",
+      "trade_actions.orb_id",
+      "trade_actions.trade_type",
+      "trade_actions.status", 
+      "trade_actions.is_active",
+      "trade_actions.summary",
+      "trade_actions.created_at",
+      "trade_actions.updated_at"
+    ])
+    .orderBy("trade_actions.created_at", "desc")
+    .execute();
+};
+
 export const startNewTradeAction = async (
-  userId: number,
+  orbId: number,
   tradeType: "buy" | "sell" | "swap"
 ) => {
   return await db
     .insertInto("trade_actions")
     .values({
-      user_id: userId,
+      orb_id: orbId,
       trade_type: tradeType,
       status: "ANALYZING", // Start in the new 'ANALYZING' state
       is_active: true,
@@ -26,11 +84,23 @@ export const startNewTradeAction = async (
 };
 
 export const getTradeActionById = async (tradeActionId: number, userId: number) => {
+  // Join with orbs and sectors to verify user ownership
   return await db
     .selectFrom("trade_actions")
-    .where("id", "=", tradeActionId)
-    .where("user_id", "=", userId)
-    .selectAll()
+    .innerJoin("orbs", "orbs.id", "trade_actions.orb_id")
+    .innerJoin("sectors", "sectors.id", "orbs.sector_id")
+    .where("trade_actions.id", "=", tradeActionId)
+    .where("sectors.user_id", "=", userId)
+    .select([
+      "trade_actions.id",
+      "trade_actions.orb_id", 
+      "trade_actions.trade_type",
+      "trade_actions.status",
+      "trade_actions.is_active",
+      "trade_actions.summary",
+      "trade_actions.created_at",
+      "trade_actions.updated_at"
+    ])
     .executeTakeFirst();
 };
 
@@ -58,7 +128,7 @@ export const updateTradeStatus = async (
 // == Journal Entry Functions ==
 
 export const createJournalEntry = async <T extends JournalEntryType>({
-  userId,
+  sectorId,
   tradeActionId,
   type,
   content,
@@ -66,7 +136,7 @@ export const createJournalEntry = async <T extends JournalEntryType>({
   confidenceScore,
   isInternal = false,
 }: {
-  userId: number;
+  sectorId: number;
   tradeActionId?: number;
   type: T;
   content: Extract<JournalEntryContent, { contentType: T }>;
@@ -77,7 +147,7 @@ export const createJournalEntry = async <T extends JournalEntryType>({
   return await db
     .insertInto("journal_entries")
     .values({
-      user_id: userId,
+      sector_id: sectorId,
       trade_action_id: tradeActionId,
       type,
       content: JSON.stringify(content),
@@ -112,6 +182,12 @@ export const addUserAction = async (
   tradeActionId: number,
   content: UserActionContent
 ) => {
+  // Get sector ID from trade action
+  const sectorId = await getSectorIdFromTradeAction(tradeActionId);
+  if (!sectorId) {
+    throw new Error("Trade action not found or invalid");
+  }
+
   // Automatically update the parent trade action's status
   if (content.action_type === "approve") {
     await updateTradeStatus(tradeActionId, "APPROVED");
@@ -120,7 +196,7 @@ export const addUserAction = async (
   }
 
   return createJournalEntry({
-    userId,
+    sectorId,
     tradeActionId,
     type: "USER_ACTION",
     content,
@@ -129,6 +205,12 @@ export const addUserAction = async (
 
 export const interruptTradeAction = async (userId: number, tradeActionId: number) => {
   const schedulerId = `monitor-trade-${tradeActionId}`;
+
+  // Get sector ID from trade action
+  const sectorId = await getSectorIdFromTradeAction(tradeActionId);
+  if (!sectorId) {
+    throw new Error("Trade action not found or invalid");
+  }
 
   try {
     await strategyQueue.removeJobScheduler(schedulerId);
@@ -146,7 +228,7 @@ export const interruptTradeAction = async (userId: number, tradeActionId: number
   await updateTradeStatus(tradeActionId, "USER_INTERVENED");
 
   return createJournalEntry({
-    userId,
+    sectorId,
     tradeActionId,
     type: "SYSTEM_ALERT",
     content: {
@@ -164,10 +246,16 @@ export const addUserFeedback = async (
   tradeActionId: number,
   content: UserFeedbackContent
 ) => {
+  // Get sector ID from trade action
+  const sectorId = await getSectorIdFromTradeAction(tradeActionId);
+  if (!sectorId) {
+    throw new Error("Trade action not found or invalid");
+  }
+
   // TODO: send message to the Mastra AI agent to update its model with this feedback.
 
   return createJournalEntry({
-    userId,
+    sectorId,
     tradeActionId,
     type: "USER_FEEDBACK",
     content,
@@ -181,8 +269,14 @@ export const addAIAnalysis = async (
   tradeActionId: number,
   content: Extract<JournalEntryContent, { contentType: "AI_ANALYSIS" }>
 ) => {
+  // Get sector ID from trade action
+  const sectorId = await getSectorIdFromTradeAction(tradeActionId);
+  if (!sectorId) {
+    throw new Error("Trade action not found or invalid");
+  }
+
   return createJournalEntry({
-    userId,
+    sectorId,
     tradeActionId,
     type: "AI_ANALYSIS",
     content,
@@ -195,8 +289,14 @@ export const addAIDecision = async (
   tradeActionId: number,
   content: Extract<JournalEntryContent, { contentType: "AI_DECISION" }>
 ) => {
+  // Get sector ID from trade action
+  const sectorId = await getSectorIdFromTradeAction(tradeActionId);
+  if (!sectorId) {
+    throw new Error("Trade action not found or invalid");
+  }
+
   return createJournalEntry({
-    userId,
+    sectorId,
     tradeActionId,
     type: "AI_DECISION",
     content,

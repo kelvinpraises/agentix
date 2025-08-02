@@ -9,6 +9,19 @@ const router = Router();
 
 router.use(protect);
 
+// Schema for route params
+const sectorIdSchema = z.object({
+  params: z.object({
+    sectorId: z.string().regex(/^\d+$/, { message: "Invalid sector ID" }),
+  }),
+});
+
+const orbIdSchema = z.object({
+  params: z.object({
+    orbId: z.string().regex(/^\d+$/, { message: "Invalid orb ID" }),
+  }),
+});
+
 // Schema for UserActionContent
 const userActionSchema = z.object({
   body: z.object({
@@ -41,6 +54,11 @@ const userFeedbackSchema = z.object({
   }),
 });
 
+// New routes for sector/orb-based trade fetching
+router.get("/sector/:sectorId", validate(sectorIdSchema), tradeController.getTradesBySector);
+router.get("/orb/:orbId", validate(orbIdSchema), tradeController.getTradesByOrb);
+
+// Existing trade detail routes
 router.get("/:tradeId", tradeController.getTradeDetails);
 router.post("/:tradeId/action", validate(userActionSchema), tradeController.postUserAction);
 router.post("/:tradeId/interrupt", tradeController.interruptTrade);

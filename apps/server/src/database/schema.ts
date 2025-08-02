@@ -15,7 +15,7 @@ export interface SectorsTable {
   id: Generated<number>;
   user_id: number;
   name: string;
-  type: "live_trading" | "paper_trading" | "conservative_defi";
+  type: "live_trading" | "paper_trading";
   settings: JSONColumnType<Record<string, any>> | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;

@@ -6,10 +6,52 @@ import {
   addUserFeedback,
   getJournalForTradeAction,
   getTradeActionById,
+  getTradesBySector,
+  getTradesByOrb,
   interruptTradeAction,
 } from "@/services/trading/trade-service";
 
 const tradeController = {
+  async getTradesBySector(req: Request, res: Response) {
+    if (!req.user?.id) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const { sectorId } = req.params;
+    const userId = req.user.id;
+
+    try {
+      const trades = await getTradesBySector(parseInt(sectorId, 10), userId);
+      res.status(200).json(trades);
+      return;
+    } catch (error) {
+      console.error("Error fetching trades by sector:", error);
+      res.status(500).json({ error: "Internal server error" });
+      return;
+    }
+  },
+
+  async getTradesByOrb(req: Request, res: Response) {
+    if (!req.user?.id) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const { orbId } = req.params;
+    const userId = req.user.id;
+
+    try {
+      const trades = await getTradesByOrb(parseInt(orbId, 10), userId);
+      res.status(200).json(trades);
+      return;
+    } catch (error) {
+      console.error("Error fetching trades by orb:", error);
+      res.status(500).json({ error: "Internal server error" });
+      return;
+    }
+  },
+
   async getTradeDetails(req: Request, res: Response) {
     if (!req.user?.id) {
       res.status(401).json({ error: "Unauthorized" });
