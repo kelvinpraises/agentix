@@ -7,15 +7,23 @@ export interface UsersTable {
   id: Generated<number>;
   email: string;
   password_hash: string;
-  wallet_address_eth: string | null;
-  wallet_address_sol: string | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
-export interface UserPoliciesTable {
+export interface SectorsTable {
   id: Generated<number>;
   user_id: number;
+  name: string;
+  type: "live_trading" | "paper_trading" | "conservative_defi";
+  settings: JSONColumnType<Record<string, any>> | null;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
+export interface SectorPoliciesTable {
+  id: Generated<number>;
+  sector_id: number;
   policy_document: JSONColumnType<PolicyDocument>;
   version: number;
   is_active: boolean;
@@ -23,9 +31,32 @@ export interface UserPoliciesTable {
   created_at: ColumnType<Date, string | undefined, never>;
 }
 
+export interface OrbsTable {
+  id: Generated<number>;
+  sector_id: number;
+  name: string;
+  chain: "ethereum" | "solana" | "morph" | "stellar";
+  wallet_address: string | null;
+  asset_pairs: JSONColumnType<Record<string, number>> | null;
+  config_json: JSONColumnType<Record<string, any>> | null;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
+export interface ThreadsTable {
+  id: Generated<number>;
+  orb_id: number;
+  type: "dex" | "bridge" | "lending" | "yield_farming";
+  provider: string;
+  enabled: boolean;
+  config_json: JSONColumnType<Record<string, any>>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
 export interface TradeActionsTable {
   id: Generated<number>;
-  user_id: number;
+  orb_id: number;
   trade_type: "buy" | "sell" | "swap";
   status:
     | "ANALYZING" // AI is actively processing, user can interrupt.
@@ -53,7 +84,7 @@ export interface TradeStrategiesTable {
 
 export interface JournalEntriesTable {
   id: Generated<number>;
-  user_id: number;
+  sector_id: number;
   trade_action_id: number | null;
   type: JournalEntryType;
   content: JSONColumnType<JournalEntryContent>;
@@ -65,7 +96,7 @@ export interface JournalEntriesTable {
 
 export interface PortfolioSnapshotsTable {
   id: Generated<number>;
-  user_id: number;
+  sector_id: number;
   total_value: number;
   total_pnl: number;
   pnl_percentage: number;
@@ -76,7 +107,10 @@ export interface PortfolioSnapshotsTable {
 
 export interface DB {
   users: UsersTable;
-  user_policies: UserPoliciesTable;
+  sectors: SectorsTable;
+  sector_policies: SectorPoliciesTable;
+  orbs: OrbsTable;
+  threads: ThreadsTable;
   trade_actions: TradeActionsTable;
   trade_strategies: TradeStrategiesTable;
   journal_entries: JournalEntriesTable;
