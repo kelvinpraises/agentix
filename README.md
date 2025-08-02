@@ -53,3 +53,6 @@ This queue's sole purpose is to manage **open, active trades** by executing thei
     4.  Execute each rule against the live price.
     5.  If **any rule's condition is met**, the worker initiates a "close trade" action and terminates the repeatable job, ending the monitoring cycle.
     6.  If no conditions are met, the job completes and waits for its next scheduled run.
+
+
+Complete separation of opportunity discovery from active trade management through message queues. Two-queue architecture for user policy execution and strategy monitoring.
