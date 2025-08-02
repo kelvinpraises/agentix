@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import { threadController } from "@/api/controllers/threadController";
+import threadController from "@/api/controllers/threadController";
 import { protect } from "@/api/middleware/auth";
 import { validate } from "@/api/middleware/validation";
 

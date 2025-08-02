@@ -16,7 +16,7 @@ export interface SectorsTable {
   user_id: number;
   name: string;
   type: "live_trading" | "paper_trading";
-  settings: JSONColumnType<Record<string, any>> | null;
+  settings: JSONColumnType<Record<string, any> | null>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
@@ -37,8 +37,8 @@ export interface OrbsTable {
   name: string;
   chain: "ethereum" | "solana" | "morph" | "stellar";
   wallet_address: string | null;
-  asset_pairs: JSONColumnType<Record<string, number>> | null;
-  config_json: JSONColumnType<Record<string, any>> | null;
+  asset_pairs: JSONColumnType<Record<string, number> | null>;
+  config_json: JSONColumnType<Record<string, any> | null>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
@@ -88,7 +88,7 @@ export interface JournalEntriesTable {
   trade_action_id: number | null;
   type: JournalEntryType;
   content: JSONColumnType<JournalEntryContent>;
-  metadata: JSONColumnType<Record<string, any>> | null;
+  metadata: JSONColumnType<Record<string, any> | null>;
   confidence_score: number | null;
   is_internal: boolean;
   created_at: ColumnType<Date, string | undefined, never>;

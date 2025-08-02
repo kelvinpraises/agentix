@@ -29,7 +29,7 @@ const snapshots = [
   },
 ];
 
-router.get("/dashboard", (req, res) => {
+router.get("/dashboard", (_req, res) => {
   res.json({ snapshots });
 });
 
