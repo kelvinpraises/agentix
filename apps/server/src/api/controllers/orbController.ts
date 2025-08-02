@@ -18,7 +18,7 @@ interface UpdateOrbRequestBody {
   config_json?: Record<string, any>;
 }
 
-export const orbController = {
+const orbController = {
   // GET /orbs/:sectorId - Get all orbs for a sector
   async getOrbsBySector(req: Request, res: Response) {
     try {
@@ -26,7 +26,8 @@ export const orbController = {
       const sectorId = parseInt(req.params.sectorId);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify sector belongs to user
@@ -38,7 +39,8 @@ export const orbController = {
         .executeTakeFirst();
 
       if (!sector) {
-        return res.status(404).json({ error: "Sector not found" });
+        res.status(404).json({ error: "Sector not found" });
+        return;
       }
 
       const orbs = await db
@@ -62,7 +64,8 @@ export const orbController = {
       const orbId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Get orb with sector ownership verification
@@ -75,7 +78,8 @@ export const orbController = {
         .executeTakeFirst();
 
       if (!orb) {
-        return res.status(404).json({ error: "Orb not found" });
+        res.status(404).json({ error: "Orb not found" });
+        return;
       }
 
       // Get threads for this orb
@@ -96,14 +100,23 @@ export const orbController = {
   async createOrb(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
-      const { sector_id, name, chain, wallet_address, asset_pairs, config_json }: CreateOrbRequestBody = req.body;
+      const {
+        sector_id,
+        name,
+        chain,
+        wallet_address,
+        asset_pairs,
+        config_json,
+      }: CreateOrbRequestBody = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       if (!sector_id || !name || !chain) {
-        return res.status(400).json({ error: "Sector ID, name, and chain are required" });
+        res.status(400).json({ error: "Sector ID, name, and chain are required" });
+        return;
       }
 
       // Verify sector belongs to user
@@ -115,7 +128,8 @@ export const orbController = {
         .executeTakeFirst();
 
       if (!sector) {
-        return res.status(404).json({ error: "Sector not found" });
+        res.status(404).json({ error: "Sector not found" });
+        return;
       }
 
       const newOrb: NewOrb = {
@@ -123,8 +137,8 @@ export const orbController = {
         name,
         chain,
         wallet_address: wallet_address || null,
-        asset_pairs: asset_pairs || null,
-        config_json: config_json || null,
+        asset_pairs: asset_pairs ? JSON.stringify(asset_pairs) : "{}",
+        config_json: config_json ? JSON.stringify(config_json) : "{}",
       };
 
       const result = await db
@@ -148,7 +162,8 @@ export const orbController = {
       const updates: UpdateOrbRequestBody = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify orb belongs to user's sector
@@ -161,11 +176,15 @@ export const orbController = {
         .executeTakeFirst();
 
       if (!existingOrb) {
-        return res.status(404).json({ error: "Orb not found" });
+        res.status(404).json({ error: "Orb not found" });
+        return;
       }
 
+      const { asset_pairs, config_json, ...otherUpdates } = updates;
       const updateData: OrbUpdate = {
-        ...updates,
+        ...otherUpdates,
+        ...(asset_pairs && { asset_pairs: JSON.stringify(asset_pairs) }),
+        ...(config_json && { config_json: JSON.stringify(config_json) }),
         updated_at: new Date().toISOString(),
       };
 
@@ -190,7 +209,8 @@ export const orbController = {
       const orbId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify orb belongs to user's sector
@@ -203,13 +223,11 @@ export const orbController = {
         .executeTakeFirst();
 
       if (!existingOrb) {
-        return res.status(404).json({ error: "Orb not found" });
+        res.status(404).json({ error: "Orb not found" });
+        return;
       }
 
-      await db
-        .deleteFrom("orbs")
-        .where("id", "=", orbId)
-        .execute();
+      await db.deleteFrom("orbs").where("id", "=", orbId).execute();
 
       res.json({ message: "Orb deleted successfully" });
     } catch (error) {
@@ -218,3 +236,5 @@ export const orbController = {
     }
   },
 };
+
+export default orbController;

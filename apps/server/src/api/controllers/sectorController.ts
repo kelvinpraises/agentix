@@ -14,13 +14,14 @@ interface UpdateSectorRequestBody {
   settings?: Record<string, any>;
 }
 
-export const sectorController = {
+const sectorController = {
   // GET /sectors - Get all sectors for authenticated user
   async getAllSectors(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       const sectors = await db
@@ -44,7 +45,8 @@ export const sectorController = {
       const sectorId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       const sector = await db
@@ -55,7 +57,8 @@ export const sectorController = {
         .executeTakeFirst();
 
       if (!sector) {
-        return res.status(404).json({ error: "Sector not found" });
+        res.status(404).json({ error: "Sector not found" });
+        return;
       }
 
       // Get orbs for this sector
@@ -79,18 +82,20 @@ export const sectorController = {
       const { name, type, settings }: CreateSectorRequestBody = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       if (!name || !type) {
-        return res.status(400).json({ error: "Name and type are required" });
+        res.status(400).json({ error: "Name and type are required" });
+        return;
       }
 
       const newSector: NewSector = {
         user_id: userId,
         name,
         type,
-        settings: settings || null,
+        settings: settings ? JSON.stringify(settings) : "{}",
       };
 
       const result = await db
@@ -114,7 +119,8 @@ export const sectorController = {
       const updates: UpdateSectorRequestBody = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify sector belongs to user
@@ -126,11 +132,14 @@ export const sectorController = {
         .executeTakeFirst();
 
       if (!existingSector) {
-        return res.status(404).json({ error: "Sector not found" });
+        res.status(404).json({ error: "Sector not found" });
+        return;
       }
 
+      const { settings, ...otherUpdates } = updates;
       const updateData: SectorUpdate = {
-        ...updates,
+        ...otherUpdates,
+        ...(settings && { settings: JSON.stringify(settings) }),
         updated_at: new Date().toISOString(),
       };
 
@@ -155,7 +164,8 @@ export const sectorController = {
       const sectorId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify sector belongs to user
@@ -167,7 +177,8 @@ export const sectorController = {
         .executeTakeFirst();
 
       if (!existingSector) {
-        return res.status(404).json({ error: "Sector not found" });
+        res.status(404).json({ error: "Sector not found" });
+        return;
       }
 
       await db
@@ -182,3 +193,5 @@ export const sectorController = {
     }
   },
 };
+
+export default sectorController;

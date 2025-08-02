@@ -17,7 +17,7 @@ interface UpdateThreadRequestBody {
   config_json?: Record<string, any>;
 }
 
-export const threadController = {
+const threadController = {
   // GET /threads/:orbId - Get all threads for an orb
   async getThreadsByOrb(req: Request, res: Response) {
     try {
@@ -25,7 +25,8 @@ export const threadController = {
       const orbId = parseInt(req.params.orbId);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify orb belongs to user's sector
@@ -38,7 +39,8 @@ export const threadController = {
         .executeTakeFirst();
 
       if (!orb) {
-        return res.status(404).json({ error: "Orb not found" });
+        res.status(404).json({ error: "Orb not found" });
+        return;
       }
 
       const threads = await db
@@ -63,7 +65,8 @@ export const threadController = {
       const threadId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Get thread with ownership verification
@@ -77,7 +80,8 @@ export const threadController = {
         .executeTakeFirst();
 
       if (!thread) {
-        return res.status(404).json({ error: "Thread not found" });
+        res.status(404).json({ error: "Thread not found" });
+        return;
       }
 
       res.json({ thread });
@@ -100,13 +104,15 @@ export const threadController = {
       }: CreateThreadRequestBody = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       if (!orb_id || !type || !provider || !config_json) {
-        return res
+        res
           .status(400)
           .json({ error: "Orb ID, type, provider, and config are required" });
+        return;
       }
 
       // Verify orb belongs to user's sector
@@ -119,7 +125,8 @@ export const threadController = {
         .executeTakeFirst();
 
       if (!orb) {
-        return res.status(404).json({ error: "Orb not found" });
+        res.status(404).json({ error: "Orb not found" });
+        return;
       }
 
       const newThread: NewThread = {
@@ -127,7 +134,7 @@ export const threadController = {
         type,
         provider,
         enabled,
-        config_json,
+        config_json: JSON.stringify(config_json),
       };
 
       const result = await db
@@ -151,7 +158,8 @@ export const threadController = {
       const updates: UpdateThreadRequestBody = req.body;
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify thread belongs to user's orb/sector
@@ -165,11 +173,14 @@ export const threadController = {
         .executeTakeFirst();
 
       if (!existingThread) {
-        return res.status(404).json({ error: "Thread not found" });
+        res.status(404).json({ error: "Thread not found" });
+        return;
       }
 
+      const { config_json, ...otherUpdates } = updates;
       const updateData: ThreadUpdate = {
-        ...updates,
+        ...otherUpdates,
+        ...(config_json && { config_json: JSON.stringify(config_json) }),
         updated_at: new Date().toISOString(),
       };
 
@@ -194,7 +205,8 @@ export const threadController = {
       const threadId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Verify thread belongs to user's orb/sector
@@ -208,7 +220,8 @@ export const threadController = {
         .executeTakeFirst();
 
       if (!existingThread) {
-        return res.status(404).json({ error: "Thread not found" });
+        res.status(404).json({ error: "Thread not found" });
+        return;
       }
 
       await db.deleteFrom("threads").where("id", "=", threadId).execute();
@@ -227,7 +240,8 @@ export const threadController = {
       const threadId = parseInt(req.params.id);
 
       if (!userId) {
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       // Get current thread state with ownership verification
@@ -241,7 +255,8 @@ export const threadController = {
         .executeTakeFirst();
 
       if (!thread) {
-        return res.status(404).json({ error: "Thread not found" });
+        res.status(404).json({ error: "Thread not found" });
+        return;
       }
 
       const result = await db
@@ -261,3 +276,5 @@ export const threadController = {
     }
   },
 };
+
+export default threadController;

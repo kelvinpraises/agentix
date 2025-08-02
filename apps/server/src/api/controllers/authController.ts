@@ -29,7 +29,7 @@ const authController = {
     res: Response<AuthResponse | { error: string }>
   ) {
     try {
-      const { email, password, ethWalletAddress, solWalletAddress } = req.body;
+      const { email, password } = req.body;
       const existingUser = await authService.findUserByEmail(email);
       if (existingUser) {
         res.status(409).json({ error: "User with this email already exists." });
@@ -39,8 +39,6 @@ const authController = {
       const user = await authService.createUser({
         email,
         password_hash: hashedPassword,
-        wallet_address_eth: ethWalletAddress,
-        wallet_address_sol: solWalletAddress,
       });
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!,
         {
