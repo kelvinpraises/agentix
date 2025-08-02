@@ -4,9 +4,12 @@ import express from "express";
 
 import { errorHandler } from "@/api/middleware/errorHandler";
 import authRoutes from "@/api/routes/auth";
+import orbRoutes from "@/api/routes/orb";
 import policyRoutes from "@/api/routes/policy";
 import portfolioRoutes from "@/api/routes/portfolio";
 import profileRoutes from "@/api/routes/profile";
+import sectorRoutes from "@/api/routes/sector";
+import threadRoutes from "@/api/routes/thread";
 import tradeRoutes from "@/api/routes/trade";
 import cronService from "@/services/core/cron-service";
 
@@ -19,6 +22,9 @@ app.use(express.json());
 
 // Use routes
 app.use("/api/auth", authRoutes);
+app.use("/api/sectors", sectorRoutes);
+app.use("/api/orbs", orbRoutes);
+app.use("/api/threads", threadRoutes);
 app.use("/api/trades", tradeRoutes);
 app.use("/api/policy", policyRoutes);
 app.use("/api/profile", profileRoutes);
