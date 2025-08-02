@@ -1,4 +1,4 @@
-export type SectorType = "live_trading" | "paper_trading" | "conservative_defi";
+export type SectorType = "live_trading" | "paper_trading";
 
 export interface SectorSettings {
   max_concurrent_trades?: number;

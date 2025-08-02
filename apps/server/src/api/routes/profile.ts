@@ -18,6 +18,7 @@ const updateProfileSchema = z.object({
 });
 
 router.get("/", profileController.getProfile);
+router.get("/full", profileController.getFullProfile);
 router.put("/", validate(updateProfileSchema), profileController.updateProfile);
 
 export default router;
