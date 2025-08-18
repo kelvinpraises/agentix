@@ -1,6 +1,6 @@
 import { Selectable } from "kysely";
 
-import { TradeStrategiesTable } from "@/database/schema";
+import { TradeStrategiesTable } from "@/infrastructure/database/schema";
 
 export interface StrategyAnalysis {
   warnings: string[];
@@ -51,7 +51,9 @@ export const strategyAnalysisService = {
     for (const [key, count] of strategyCounts.entries()) {
       if (count > 1) {
         const [type] = key.split(":", 1);
-        warnings.push(`Duplicate strategy found: ${type}. Consolidate or remove duplicates.`);
+        warnings.push(
+          `Duplicate strategy found: ${type}. Consolidate or remove duplicates.`
+        );
       }
     }
 
@@ -71,4 +73,3 @@ export const strategyAnalysisService = {
     return { warnings, suggestions };
   },
 };
-
