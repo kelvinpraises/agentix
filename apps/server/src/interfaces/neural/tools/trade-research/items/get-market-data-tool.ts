@@ -5,8 +5,8 @@ import {
   marketDataResultSchema,
   marketDataService,
 } from "@/services/trading/market-data-service";
-import { AgentRuntimeContextSchema } from "@/types/context";
 import { createJournalEntry } from "@/services/trading/trade-service";
+import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const getMarketDataTool = createTool({
   id: "getMarketData",

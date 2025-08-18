@@ -2,8 +2,8 @@ import { createTool } from "@mastra/core";
 import { z } from "zod";
 
 import { marketDataService } from "@/services/trading/market-data-service";
-import { AgentRuntimeContextSchema } from "@/types/context";
 import { createJournalEntry } from "@/services/trading/trade-service";
+import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const getCoinListTool = createTool({
   id: "getCoinList",

@@ -3,16 +3,16 @@ import { SandboxedJob } from "bullmq";
 import { strategyQueue } from "@/infrastructure/queues/definitions";
 import { sendTradeProposal } from "@/services/shared/notification-service";
 import { marketDataService } from "@/services/trading/market-data-service";
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { 
-  getTradeAction, 
-  getExecutionJournalEntry, 
-  getSectorWithUser 
-} from "@/services/trading/trade-service";
 import * as positionMonitor from "@/services/trading/strategies/position-monitor";
 import * as rsiStrategy from "@/services/trading/strategies/rsi";
 import * as smaCrossStrategy from "@/services/trading/strategies/sma-cross";
 import * as timeLimitStrategy from "@/services/trading/strategies/time-limit";
+import { strategyManagementService } from "@/services/trading/strategy-management-service";
+import {
+  getExecutionJournalEntry,
+  getSectorWithUser,
+  getTradeAction
+} from "@/services/trading/trade-service";
 import { PositionEnteredContent } from "@/types/journal";
 import { StrategyContext, StrategyParams } from "@/types/strategy";
 

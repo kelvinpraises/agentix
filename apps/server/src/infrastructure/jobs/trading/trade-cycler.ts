@@ -1,7 +1,7 @@
 import cron from "node-cron";
 
-import { userTradingQueue } from "@/infrastructure/queues/definitions";
 import { db } from "@/infrastructure/database/turso-connection";
+import { userTradingQueue } from "@/infrastructure/queues/definitions";
 
 const tradeCycler = {
   async start() {
