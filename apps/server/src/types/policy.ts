@@ -16,12 +16,7 @@ export const policyDocumentSchema = z.object({
       enabled_markets: z.array(z.string()).optional(),
       preferred_exchanges: z.array(z.string()).optional(),
       max_slippage_percent: z.number().optional(),
-      base_currency: z
-        .object({
-          ethereum: z.string().optional(),
-          solana: z.string().optional(),
-        })
-        .optional(),
+      base_currency: z.record(z.string()).optional(),
     })
     .optional(),
   investment_strategy: z

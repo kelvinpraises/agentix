@@ -2,16 +2,16 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 
-import { errorHandler } from "@/api/middleware/errorHandler";
-import authRoutes from "@/api/routes/auth";
-import orbRoutes from "@/api/routes/orb";
-import policyRoutes from "@/api/routes/policy";
-import portfolioRoutes from "@/api/routes/portfolio";
-import profileRoutes from "@/api/routes/profile";
-import sectorRoutes from "@/api/routes/sector";
-import threadRoutes from "@/api/routes/thread";
-import tradeRoutes from "@/api/routes/trade";
-import cronService from "@/services/core/cron-service";
+import tradeCycler from "@/infrastructure/jobs/trading/trade-cycler";
+import { errorHandler } from "@/interfaces/api/middleware/errorHandler";
+import authRoutes from "@/interfaces/api/routes/auth";
+import orbRoutes from "@/interfaces/api/routes/orb";
+import policyRoutes from "@/interfaces/api/routes/policy";
+import portfolioRoutes from "@/interfaces/api/routes/portfolio";
+import profileRoutes from "@/interfaces/api/routes/profile";
+import sectorRoutes from "@/interfaces/api/routes/sector";
+import threadRoutes from "@/interfaces/api/routes/thread";
+import tradeRoutes from "@/interfaces/api/routes/trade";
 
 dotenv.config();
 
@@ -42,6 +42,6 @@ if (!process.env.BACKEND_PORT) {
 
 app.listen(BACKEND_PORT, () => {
   console.log(`🤖 [agentix-server]: running at http://localhost:${BACKEND_PORT}`);
-  // Start the master cron service
-  cronService.start();
+  // Start the cron jobs
+  tradeCycler.start();
 });
