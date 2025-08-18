@@ -1,4 +1,5 @@
-export type ChainType = "ethereum" | "solana" | "morph" | "stellar";
+export const CHAINS = ["ethereum", "solana", "morph", "stellar"] as const;
+export type ChainType = (typeof CHAINS)[number];
 
 export interface AssetPairs {
   [pair: string]: number; // pair -> weight percentage

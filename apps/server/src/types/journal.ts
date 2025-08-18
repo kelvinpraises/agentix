@@ -1,322 +1,289 @@
+import { ChainType } from "@/types/orb";
+
 export type JournalEntryType =
-  // Core AI Operations
-  | "AI_ANALYSIS" // Market analysis, portfolio assessment
-  | "AI_DECISION" // AI making autonomous decisions
-  | "AI_RECOMMENDATION" // AI suggesting actions to user
-  // Market & Data
-  | "MARKET_DATA" // Price updates, volume, indicators
-  | "TRADE_ALERT" // Urgent market opportunities
-  | "RISK_ANALYSIS" // Risk assessment and monitoring
-  // Strategy & Planning
-  | "STRATEGY_INSIGHT" // Strategy performance and insights
-  | "WHAT_IF_ANALYSIS" // Scenario planning and alternatives
-  | "PORTFOLIO_REBALANCE" // Portfolio adjustment recommendations
-  // Execution & Monitoring
-  | "TRADE_EXECUTION" // Actual trade execution with approval flow
-  | "POSITION_MONITOR" // Live position tracking and updates
-  | "TRANSACTION_STATUS" // Blockchain transaction progress
+  // Research Phase - Data Retrieval
+  | "MARKET_DATA_RETRIEVED" // getMarketData tool output
+  | "SENTIMENT_DATA_RETRIEVED" // getSentiment tool output
+  | "TECHNICAL_DATA_RETRIEVED" // getOHLC, getMarketChart tool output
+  | "COIN_DATA_RETRIEVED" // getCoinList tool output
+  | "NEWS_DATA_RETRIEVED" // globalSearch tool output
+  // Research Phase - AI Analysis
+  | "MARKET_DATA_ANALYSIS" // AI analysis of market data
+  | "SENTIMENT_ANALYSIS" // AI analysis of sentiment data
+  | "TECHNICAL_ANALYSIS" // AI analysis of technical data
+  | "COIN_ANALYSIS" // AI analysis of coin data
+  | "NEWS_ANALYSIS" // AI analysis of news data
+  // Building Phase - Strategy Building
+  | "RSI_STRATEGY_ADDED" // addRsiStrategy tool output
+  | "SMA_STRATEGY_ADDED" // addSmaCrossStrategy tool output
+  | "POSITION_MONITOR_ADDED" // addPositionMonitor tool output
+  | "TIME_LIMIT_ADDED" // addTimeLimit tool output
+  | "STRATEGY_REMOVED" // removeStrategy tool output
+  | "STRATEGY_UPDATED" // updateStrategy tool output
+  // Execution Phase
+  | "POSITION_ENTERED" // enterPosition tool output
+  | "POSITION_ADJUSTED" // adjustPosition tool output
+  | "POSITION_EXITED" // exitPosition tool output
+  // AI Reflection Entries
+  | "RESEARCH_SYNTHESIS" // AI combines research findings
+  | "EXECUTION_CONFIDENCE" // AI confidence before executing
+  | "TRADE_REFLECTION" // AI post-trade analysis
   // User Interaction
-  | "USER_ACTION" // User decisions (approve/reject/modify)
-  | "USER_OVERRIDE" // User manually overriding AI decisions
+  | "USER_ACTION" // User decisions (approve/reject/pause)
   | "USER_FEEDBACK" // User rating or commenting on AI actions
-  // System & Alerts
-  | "SYSTEM_ALERT" // System notifications, errors, warnings
+  // System & Monitoring
   | "PERFORMANCE_REPORT" // Periodic performance summaries
-  | "COMPLIANCE_CHECK"; // Regulatory or risk compliance notifications
+  | "SYSTEM_ALERT"; // System notifications, errors, warnings
+
+// Type mapping for strict content validation
+export type JournalContentMap = {
+  MARKET_DATA_RETRIEVED: MarketDataRetrievedContent;
+  SENTIMENT_DATA_RETRIEVED: SentimentDataRetrievedContent;
+  TECHNICAL_DATA_RETRIEVED: TechnicalDataRetrievedContent;
+  COIN_DATA_RETRIEVED: CoinDataRetrievedContent;
+  NEWS_DATA_RETRIEVED: NewsDataRetrievedContent;
+  MARKET_DATA_ANALYSIS: MarketDataAnalysisContent;
+  SENTIMENT_ANALYSIS: SentimentAnalysisContent;
+  TECHNICAL_ANALYSIS: TechnicalAnalysisContent;
+  COIN_ANALYSIS: CoinAnalysisContent;
+  NEWS_ANALYSIS: NewsAnalysisContent;
+  RSI_STRATEGY_ADDED: RsiStrategyAddedContent;
+  SMA_STRATEGY_ADDED: SmaStrategyAddedContent;
+  POSITION_MONITOR_ADDED: PositionMonitorAddedContent;
+  TIME_LIMIT_ADDED: TimeLimitAddedContent;
+  STRATEGY_REMOVED: StrategyRemovedContent;
+  STRATEGY_UPDATED: StrategyUpdatedContent;
+  POSITION_ENTERED: PositionEnteredContent;
+  POSITION_EXITED: PositionExitedContent;
+  RESEARCH_SYNTHESIS: ResearchSynthesisContent;
+  EXECUTION_CONFIDENCE: ExecutionConfidenceContent;
+  TRADE_REFLECTION: TradeReflectionContent;
+  USER_ACTION: UserActionContent;
+  USER_FEEDBACK: UserFeedbackContent;
+  PERFORMANCE_REPORT: PerformanceReportContent;
+  SYSTEM_ALERT: SystemAlertContent;
+};
 
 // Specific content types for each journal entry
 export type JournalEntryContent =
-  | AIAnalysisContent
-  | AIDecisionContent
-  | AIRecommendationContent
-  | MarketDataContent
-  | TradeAlertContent
-  | RiskAnalysisContent
-  | StrategyInsightContent
-  | WhatIfAnalysisContent
-  | PortfolioRebalanceContent
-  | TradeExecutionContent
-  | PositionMonitorContent
-  | TransactionStatusContent
-  | UserActionContent
-  | UserOverrideContent
-  | UserFeedbackContent
-  | SystemAlertContent
+  // Research Phase - Data Retrieval
+  | MarketDataRetrievedContent
+  | SentimentDataRetrievedContent
+  | TechnicalDataRetrievedContent
+  | CoinDataRetrievedContent
+  | NewsDataRetrievedContent
+  // Research Phase - AI Analysis
+  | MarketDataAnalysisContent
+  | SentimentAnalysisContent
+  | TechnicalAnalysisContent
+  | CoinAnalysisContent
+  | NewsAnalysisContent
+  // Building Phase - Strategy Building
+  | RsiStrategyAddedContent
+  | SmaStrategyAddedContent
+  | PositionMonitorAddedContent
+  | TimeLimitAddedContent
+  | StrategyRemovedContent
+  | StrategyUpdatedContent
+  // Execution Phase
+  | PositionEnteredContent
+  | PositionExitedContent
+  // AI Reflection Entries
+  | ResearchSynthesisContent
+  | StrategyReasoningContent
+  | RiskAssessmentContent
+  | ExecutionConfidenceContent
+  | TradeReflectionContent
+  // System & Monitoring (Carried Over)
   | PerformanceReportContent
-  | ComplianceCheckContent;
+  | SystemAlertContent
+  // User Interaction (Carried Over)
+  | UserActionContent
+  | UserFeedbackContent;
 
-// Content type definitions
-export interface AIAnalysisContent {
-  contentType: "AI_ANALYSIS";
-  message: string;
-  analysis_type: "market" | "portfolio" | "risk" | "sentiment";
-  key_metrics?: Record<string, any>;
-  confidence_score: number;
+// ============================================================================
+// RESEARCH PHASE - DATA RETRIEVAL CONTENT TYPES
+// ============================================================================
+
+export interface MarketDataRetrievedContent {
+  rawData: Record<string, any>;
 }
 
-export interface AIDecisionContent {
-  contentType: "AI_DECISION";
-  message: string;
-  decision_type: "hold" | "buy" | "sell" | "rebalance" | "stop_loss_adjust";
+export interface SentimentDataRetrievedContent {
+  rawData: Record<string, any>;
+}
+
+export interface TechnicalDataRetrievedContent {
+  rawData: Record<string, any>;
+}
+
+export interface CoinDataRetrievedContent {
+  rawData: Record<string, any>;
+}
+
+export interface NewsDataRetrievedContent {
+  rawData: Record<string, any>;
+}
+
+// ============================================================================
+// RESEARCH PHASE - AI ANALYSIS CONTENT TYPES
+// ============================================================================
+
+export interface MarketDataAnalysisContent {
   reasoning: string;
-  affected_positions?: string[];
-  confidence_score: number;
 }
 
-export interface AIRecommendationContent {
-  contentType: "AI_RECOMMENDATION";
-  message: string;
-  recommendation_type:
-    | "trade"
-    | "position_adjustment"
-    | "risk_reduction"
-    | "strategy_change";
-  action_required: boolean;
-  urgency: "low" | "medium" | "high";
-  expires_at?: string;
+export interface SentimentAnalysisContent {
+  reasoning: string;
 }
 
-export interface MarketDataContent {
-  contentType: "MARKET_DATA";
-  message: string;
-  symbol: string;
-  price: number;
-  change_24h: number;
-  volume: number;
-  indicators: {
-    rsi?: number;
-    support?: number;
-    resistance?: number;
-    sentiment?: "bullish" | "bearish" | "neutral";
-  };
+export interface TechnicalAnalysisContent {
+  reasoning: string;
 }
 
-export interface TradeAlertContent {
-  contentType: "TRADE_ALERT";
-  message: string;
-  symbol: string;
-  alert_type: "breakout" | "breakdown" | "volume_spike" | "price_target";
-  urgency: "low" | "medium" | "high";
-  time_sensitive: boolean;
-  suggested_action?: string;
+export interface CoinAnalysisContent {
+  reasoning: string;
 }
 
-export interface RiskAnalysisContent {
-  contentType: "RISK_ANALYSIS";
-  message: string;
-  risk_metrics: {
-    portfolio_var: number;
-    max_drawdown: number;
-    sharpe_ratio: number;
-    win_rate: number;
-    avg_hold_time: string;
-    risk_level: "low" | "medium" | "high";
-  };
-  recommendations?: string[];
+export interface NewsAnalysisContent {
+  reasoning: string;
 }
 
-export interface StrategyInsightContent {
-  contentType: "STRATEGY_INSIGHT";
-  message: string;
-  strategy_name: string;
-  performance_metrics: {
-    past_performance: string;
-    win_rate: number;
-    avg_return: number;
-    total_trades: number;
-  };
-  confidence_score: number;
-  next_actions?: string[];
+// ============================================================================
+// BUILDING PHASE - STRATEGY CONTENT TYPES
+// ============================================================================
+
+export interface RsiStrategyAddedContent {
+  rsi_upper: number;
+  rsi_lower: number;
+  action: "reassess" | "close";
+  reasoning: string;
 }
 
-export interface WhatIfAnalysisContent {
-  contentType: "WHAT_IF_ANALYSIS";
-  message: string;
-  scenarios: Array<{
-    name: string;
-    allocation: string;
-    expected_return: string;
-    risk_level: "low" | "medium" | "high";
-    probability: number;
-  }>;
-  recommended_scenario?: number;
+export interface SmaStrategyAddedContent {
+  fast_period: number;
+  slow_period: number;
+  signal_type: "cross_up" | "cross_down" | "both";
+  action: "reassess" | "close";
+  reasoning: string;
 }
 
-export interface PortfolioRebalanceContent {
-  contentType: "PORTFOLIO_REBALANCE";
-  message: string;
-  current_allocation: Record<string, number>;
-  target_allocation: Record<string, number>;
-  required_actions: Array<{
-    action: "buy" | "sell";
-    symbol: string;
-    amount: number;
-    reason: string;
-  }>;
-  urgency: "low" | "medium" | "high";
+export interface PositionMonitorAddedContent {
+  stop_loss: number;
+  take_profit: number;
+  reasoning: string;
 }
 
-export interface TradeExecutionContent {
-  contentType: "TRADE_EXECUTION";
-  message: string;
-  trade_details: TradeProposal;
-  status: "pending" | "approved" | "rejected" | "executing" | "completed" | "failed";
-  auto_execute_in?: number;
-  confidence_score: number;
+export interface TimeLimitAddedContent {
+  duration_minutes: number;
+  action: "reassess" | "close";
+  reasoning: string;
 }
 
-export type TradeProposal = 
-  | EnterPositionProposal
-  | ExitPositionProposal
-  | AdjustPositionProposal
-  | SwapProposal;
+export interface StrategyRemovedContent {
+  strategy_type: string;
+  strategy_id: string;
+  reasoning: string;
+}
 
-export interface EnterPositionProposal {
-  proposalType: "ENTER_POSITION";
+export interface StrategyUpdatedContent {
+  strategy_type: string;
+  strategy_id: string;
+  reasoning: string;
+}
+
+// ============================================================================
+// EXECUTION PHASE CONTENT TYPES
+// ============================================================================
+
+export interface PositionEnteredContent {
   pair: string;
-  fromToken: string;
-  toToken: string;
+  from_token: string;
+  to_token: string;
   amount: string;
-  chain: "ethereum" | "solana";
+  chain: ChainType;
   dex: string;
-  strategy: string;
-  slippagePercent: number;
-  stopLossPrice?: number;
-  takeProfitPrice?: number;
-  riskLevel: "low" | "medium" | "high";
+  slippage: number;
+  stop_loss: number;
+  take_profit: number;
+  risk_level: "low" | "medium" | "high";
+  transaction_hash?: string;
+  reasoning: string;
 }
 
-export interface ExitPositionProposal {
-  proposalType: "EXIT_POSITION";
-  positionId: string;
-  exitAmount: string; // e.g., "100%" or "0.5 SOL" or "$500"
-  exitType: "FULL" | "PARTIAL" | "STOP_LOSS" | "TAKE_PROFIT";
-  chain: "ethereum" | "solana";
-  dex: string;
-  strategy: string;
-  slippagePercent: number;
-  riskLevel: "low" | "medium" | "high";
+export interface PositionExitedContent {
+  exit_type: "full" | "partial" | "stop_loss" | "take_profit" | "user";
+  exit_amount: string;
+  pnl: string;
+  reasoning: string;
 }
 
-export interface AdjustPositionProposal {
-  proposalType: "ADJUST_POSITION";
-  positionId: string;
-  adjustmentType: "STOP_LOSS" | "TAKE_PROFIT" | "BOTH";
-  newStopLossPrice?: number;
-  newTakeProfitPrice?: number;
-  reason: string;
-  riskLevel: "low" | "medium" | "high";
+// ============================================================================
+// AI REFLECTION CONTENT TYPES
+// ============================================================================
+
+export interface ResearchSynthesisContent {
+  reasoning: string;
 }
 
-export interface SwapProposal {
-  proposalType: "SWAP";
-  fromToken: string;
-  toToken: string;
-  amount: string;
-  chain: "ethereum" | "solana";
-  dex: string;
-  strategy: string;
-  slippagePercent: number;
-  riskLevel: "low" | "medium" | "high";
+export interface StrategyReasoningContent {
+  reasoning: string;
 }
 
-export interface PositionMonitorContent {
-  contentType: "POSITION_MONITOR";
-  message: string;
-  position_details: {
-    token: string;
-    entry_price: string;
-    current_price: string;
-    pnl: string;
-    pnl_percent: string;
-    stop_loss: string;
-    take_profit: string;
-    holding_time: string;
-    risk_level: "low" | "medium" | "high";
-    strategy: string;
-  };
-  alerts?: Array<{
-    type: "stop_loss_hit" | "take_profit_near" | "unusual_volume";
-    message: string;
-    urgency: "low" | "medium" | "high";
-  }>;
-  confidence_score: number;
+export interface RiskAssessmentContent {
+  reasoning: string;
 }
 
-export interface TransactionStatusContent {
-  contentType: "TRANSACTION_STATUS";
-  message: string;
-  transaction_hash: string;
-  status: "pending" | "confirming" | "confirmed" | "failed";
-  network: string;
-  gas_fee?: string;
-  block_number?: number;
-  confirmations?: number;
-  estimated_completion?: string;
+export interface ExecutionConfidenceContent {
+  reasoning: string;
 }
+
+export interface TradeReflectionContent {
+  reasoning: string;
+}
+
+// ============================================================================
+// USER INTERACTION CONTENT TYPES
+// ============================================================================
 
 export interface UserActionContent {
-  contentType: "USER_ACTION";
   message: string;
-  action_type: "approve" | "reject" | "modify" | "manual_trade" | "stop_ai" | "resume_ai";
-  target_entry_id?: number; // References the journal entry they're responding to
-  details?: Record<string, any>;
+  action_type: "approve_trade" | "reject_trade" | "pause_trade";
   timestamp: string;
 }
 
-export interface UserOverrideContent {
-  contentType: "USER_OVERRIDE";
-  message: string;
-  override_type: "force_trade" | "cancel_trade" | "modify_limits" | "change_strategy";
-  original_ai_recommendation?: string;
-  user_reasoning?: string;
-  risk_acknowledged: boolean;
+export interface UserFeedbackContent {
+  comment: string;
+  timestamp: string;
 }
 
-export interface UserFeedbackContent {
-  contentType: "USER_FEEDBACK";
-  message: string;
-  target_entry_id: number;
-  feedback_type: "rating" | "comment" | "suggestion";
-  rating?: number; // 1-5 scale
-  comment?: string;
-  helpful: boolean;
+// ============================================================================
+// SYSTEM & MONITORING CONTENT TYPES
+// ============================================================================
+export interface PerformanceReportContent {
+  pnl: string;
+  entry_price: string;
+  current_price: string;
+  stop_loss: string;
+  take_profit: string;
+  position_duration: string;
+  risk_reward_ratio: string;
+  rsi_14: number;
+  macd_signal: "bullish" | "bearish" | "neutral";
+  sma_20: string;
+  sma_50: string;
+  volume_24h: string;
+  price_change_24h: string;
+  nearest_support: string;
+  nearest_resistance: string;
+  active_strategies: number;
 }
 
 export interface SystemAlertContent {
-  contentType: "SYSTEM_ALERT";
   message: string;
   alert_type: "error" | "warning" | "info" | "maintenance";
   severity: "low" | "medium" | "high" | "critical";
   requires_action: boolean;
   resolution_steps?: string[];
   error_code?: string;
-}
-
-export interface PerformanceReportContent {
-  contentType: "PERFORMANCE_REPORT";
-  message: string;
-  report_period: string;
-  metrics: {
-    total_return: string;
-    win_rate: number;
-    total_trades: number;
-    best_trade: string;
-    worst_trade: string;
-    sharpe_ratio: number;
-    max_drawdown: number;
-  };
-  insights: string[];
-  recommendations: string[];
-}
-
-export interface ComplianceCheckContent {
-  contentType: "COMPLIANCE_CHECK";
-  message: string;
-  check_type: "position_limits" | "daily_loss_limit" | "concentration_risk" | "regulatory";
-  status: "passed" | "warning" | "failed";
-  current_value: number;
-  limit_value: number;
-  required_actions?: string[];
-  deadline?: string;
 }

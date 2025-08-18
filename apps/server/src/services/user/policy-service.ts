@@ -1,4 +1,4 @@
-import { db } from "@/database/turso-connection";
+import { db } from "@/infrastructure/database/turso-connection";
 import { PolicyUpdate } from "@/models/Policy";
 
 export const policyService = {

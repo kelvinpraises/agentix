@@ -1,4 +1,4 @@
-import { db } from "@/database/turso-connection";
+import { db } from "@/infrastructure/database/turso-connection";
 import { UserUpdate } from "@/models/User";
 
 export const profileService = {
