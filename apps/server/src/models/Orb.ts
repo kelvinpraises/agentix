@@ -1,6 +1,6 @@
 import { Insertable, Selectable, Updateable } from 'kysely'
 
-import { OrbsTable } from '@/database/schema'
+import { OrbsTable } from '@/infrastructure/database/schema'
 
 export type Orb = Selectable<OrbsTable>
 export type NewOrb = Insertable<OrbsTable>

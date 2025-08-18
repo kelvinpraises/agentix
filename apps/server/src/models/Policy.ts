@@ -1,6 +1,6 @@
 import { Insertable, Selectable, Updateable } from 'kysely'
 
-import { SectorPoliciesTable } from '@/database/schema'
+import { SectorPoliciesTable } from '@/infrastructure/database/schema'
 
 export type Policy = Selectable<SectorPoliciesTable>
 export type NewPolicy = Insertable<SectorPoliciesTable>
