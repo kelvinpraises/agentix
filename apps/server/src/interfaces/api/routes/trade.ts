@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import tradeController from "@/api/controllers/tradeController";
-import { protect } from "@/api/middleware/auth";
-import { validate } from "@/api/middleware/validation";
+import tradeController from "@/interfaces/api/controllers/tradeController";
+import { protect } from "@/interfaces/api/middleware/auth";
+import { validate } from "@/interfaces/api/middleware/validation";
 
 const router = Router();
 

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import orbController from "@/api/controllers/orbController";
-import { protect } from "@/api/middleware/auth";
-import { validate } from "@/api/middleware/validation";
+import orbController from "@/interfaces/api/controllers/orbController";
+import { protect } from "@/interfaces/api/middleware/auth";
+import { validate } from "@/interfaces/api/middleware/validation";
 import { CHAINS } from "@/types/orb";
 
 const router = Router();

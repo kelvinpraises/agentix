@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import portfolioController from "@/api/controllers/portfolioController";
-import { protect } from "@/api/middleware/auth";
+import portfolioController from "@/interfaces/api/controllers/portfolioController";
+import { protect } from "@/interfaces/api/middleware/auth";
 
 const router = Router();
 

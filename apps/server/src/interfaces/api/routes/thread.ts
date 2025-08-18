@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 
-import threadController from "@/api/controllers/threadController";
-import { protect } from "@/api/middleware/auth";
-import { validate } from "@/api/middleware/validation";
+import threadController from "@/interfaces/api/controllers/threadController";
+import { protect } from "@/interfaces/api/middleware/auth";
+import { validate } from "@/interfaces/api/middleware/validation";
 
 const router = Router();
 
