@@ -1,7 +1,8 @@
+import { Request, Response } from "express";
+
 import { db } from "@/infrastructure/database/turso-connection";
 import { NewOrb, OrbUpdate } from "@/models/Orb";
 import { ChainType } from "@/types/orb";
-import { Request, Response } from "express";
 
 interface CreateOrbRequestBody {
   sector_id: number;

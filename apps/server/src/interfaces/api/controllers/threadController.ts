@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+
 import { db } from "@/infrastructure/database/turso-connection";
 import { NewThread, ThreadUpdate } from "@/models/Thread";
 
@@ -109,9 +110,7 @@ const threadController = {
       }
 
       if (!orb_id || !type || !provider || !config_json) {
-        res
-          .status(400)
-          .json({ error: "Orb ID, type, provider, and config are required" });
+        res.status(400).json({ error: "Orb ID, type, provider, and config are required" });
         return;
       }
 

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+
 import { db } from "@/infrastructure/database/turso-connection";
 import { NewSector, SectorUpdate } from "@/models/Sector";
 
@@ -181,10 +182,7 @@ const sectorController = {
         return;
       }
 
-      await db
-        .deleteFrom("sectors")
-        .where("id", "=", sectorId)
-        .execute();
+      await db.deleteFrom("sectors").where("id", "=", sectorId).execute();
 
       res.json({ message: "Sector deleted successfully" });
     } catch (error) {
