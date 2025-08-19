@@ -2,7 +2,7 @@ import { SandboxedJob } from "bullmq";
 
 import { db } from "@/infrastructure/database/turso-connection";
 import { aiAgentService } from "@/interfaces/neural";
-import { portfolioService } from "@/services/user/portfolio-service";
+import { portfolioService } from "@/services/trading/portfolio-service";
 
 /**
  * This is the sandboxed processor for the sector trading queue.
