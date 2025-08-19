@@ -8,7 +8,7 @@ export interface StrategyAnalysis {
 }
 
 // NOTE: This list is hardcoded to avoid circular dependencies.
-// It should be kept in sync with the tools in 'services/ai-agent/tools/trade-building/index.ts'
+// It should be kept in sync with the tools in 'interfaces/neural/tools/trade-building/index.ts'
 const allTradeBuildingToolNames = [
   "addPositionMonitor",
   "addRsiStrategy",
