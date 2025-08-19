@@ -9,8 +9,6 @@ import { sanitizeUser } from "@/utils/user";
 interface RegisterRequestBody {
   email: string;
   password: string;
-  ethWalletAddress?: string;
-  solWalletAddress?: string;
 }
 
 interface LoginRequestBody {
@@ -40,10 +38,9 @@ const authController = {
         email,
         password_hash: hashedPassword,
       });
-      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!,
-        {
-          expiresIn: "24h",
-        });
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, {
+        expiresIn: "24h",
+      });
       res.status(201).json({ token, user: sanitizeUser(user) });
     } catch (error) {
       res.status(500).json({ error: "An error occurred while registering the user." });
