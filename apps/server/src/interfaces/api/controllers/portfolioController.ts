@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { portfolioService } from "@/services/user/portfolio-service";
+import { portfolioService } from "@/services/trading/portfolio-service";
 
 const portfolioController = {
   async getSnapshots(req: Request, res: Response) {
