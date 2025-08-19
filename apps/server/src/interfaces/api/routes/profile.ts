@@ -7,7 +7,17 @@ import { validate } from "@/interfaces/api/middleware/validation";
 
 const router = Router();
 
-router.use(protect);
+const userSchema = z.object({
+  id: z
+    .number()
+    .int()
+    .positive({ message: "Authentication required - protect middleware missing" }),
+  email: z.string().email({ message: "Invalid user email from authentication" }),
+});
+
+const getProfileSchema = z.object({
+  user: userSchema,
+});
 
 const updateProfileSchema = z.object({
   body: z.object({
@@ -15,10 +25,18 @@ const updateProfileSchema = z.object({
     wallet_address_eth: z.string().optional().nullable(),
     wallet_address_sol: z.string().optional().nullable(),
   }),
+  user: userSchema,
 });
 
-router.get("/", profileController.getProfile);
-router.get("/full", profileController.getFullProfile);
+router.use(protect);
+
+// GET /api/profile - Get authenticated user's basic profile
+router.get("/", validate(getProfileSchema), profileController.getProfile);
+
+// GET /api/profile/full - Get authenticated user's full profile with sectors and orbs
+router.get("/full", validate(getProfileSchema), profileController.getFullProfile);
+
+// PUT /api/profile - Update authenticated user's profile
 router.put("/", validate(updateProfileSchema), profileController.updateProfile);
 
 export default router;

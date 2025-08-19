@@ -7,23 +7,22 @@ import { validate } from "@/interfaces/api/middleware/validation";
 
 const router = Router();
 
-router.use(protect);
-
-// Schema for route params
 const sectorIdSchema = z.object({
   params: z.object({
     sectorId: z.string().regex(/^\d+$/, { message: "Invalid sector ID" }),
   }),
 });
 
-const orbIdSchema = z.object({
+const tradeIdSchema = z.object({
   params: z.object({
-    orbId: z.string().regex(/^\d+$/, { message: "Invalid orb ID" }),
+    tradeId: z.string().regex(/^\d+$/, { message: "Invalid trade ID" }),
   }),
 });
 
-// Schema for UserActionContent
 const userActionSchema = z.object({
+  params: z.object({
+    tradeId: z.string().regex(/^\d+$/, { message: "Invalid trade ID" }),
+  }),
   body: z.object({
     contentType: z.literal("USER_ACTION"),
     message: z.string(),
@@ -41,8 +40,10 @@ const userActionSchema = z.object({
   }),
 });
 
-// Schema for UserFeedbackContent
 const userFeedbackSchema = z.object({
+  params: z.object({
+    tradeId: z.string().regex(/^\d+$/, { message: "Invalid trade ID" }),
+  }),
   body: z.object({
     contentType: z.literal("USER_FEEDBACK"),
     message: z.string(),
@@ -54,14 +55,25 @@ const userFeedbackSchema = z.object({
   }),
 });
 
-// New routes for sector/orb-based trade fetching
-router.get("/sector/:sectorId", validate(sectorIdSchema), tradeController.getTradesBySector);
-router.get("/orb/:orbId", validate(orbIdSchema), tradeController.getTradesByOrb);
+router.use(protect);
 
-// Existing trade detail routes
-router.get("/:tradeId", tradeController.getTradeDetails);
+// GET /api/trades/sector/:sectorId - Get trades for authenticated user's sector
+router.get(
+  "/sector/:sectorId",
+  validate(sectorIdSchema),
+  tradeController.getTradesBySector
+);
+
+// GET /api/trades/:tradeId - Get trade details for authenticated user
+router.get("/:tradeId", validate(tradeIdSchema), tradeController.getTradeDetails);
+
+// POST /api/trades/:tradeId/action - Submit user action for authenticated user's trade
 router.post("/:tradeId/action", validate(userActionSchema), tradeController.postUserAction);
-router.post("/:tradeId/interrupt", tradeController.interruptTrade);
+
+// POST /api/trades/:tradeId/interrupt - Interrupt authenticated user's trade
+router.post("/:tradeId/interrupt", validate(tradeIdSchema), tradeController.interruptTrade);
+
+// POST /api/trades/:tradeId/feedback - Submit feedback for authenticated user's trade
 router.post(
   "/:tradeId/feedback",
   validate(userFeedbackSchema),

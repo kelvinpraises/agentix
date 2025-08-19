@@ -20,6 +20,9 @@ const createOrbSchema = z.object({
 });
 
 const updateOrbSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^\d+$/, { message: "Invalid orb ID" }),
+  }),
   body: z.object({
     name: z.string().min(1).optional(),
     wallet_address: z.string().optional(),
@@ -40,22 +43,21 @@ const sectorIdSchema = z.object({
   }),
 });
 
-// All routes require authentication
 router.use(protect);
 
-// GET /orbs/:sectorId - Get all orbs for a sector
+// GET /api/orbs/:sectorId - Get all orbs for authenticated user's sector
 router.get("/:sectorId", validate(sectorIdSchema), orbController.getOrbsBySector);
 
-// GET /orbs/detail/:id - Get specific orb with threads
+// GET /api/orbs/detail/:id - Get specific orb with threads for authenticated user
 router.get("/detail/:id", validate(orbIdSchema), orbController.getOrbById);
 
-// POST /orbs - Create new orb
+// POST /api/orbs - Create new orb in authenticated user's sector
 router.post("/", validate(createOrbSchema), orbController.createOrb);
 
-// PUT /orbs/:id - Update orb
-router.put("/:id", validate(orbIdSchema), validate(updateOrbSchema), orbController.updateOrb);
+// PUT /api/orbs/:id - Update authenticated user's orb
+router.put("/:id", validate(updateOrbSchema), orbController.updateOrb);
 
-// DELETE /orbs/:id - Delete orb
+// DELETE /api/orbs/:id - Delete authenticated user's orb
 router.delete("/:id", validate(orbIdSchema), orbController.deleteOrb);
 
 export default router;

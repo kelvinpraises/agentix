@@ -16,6 +16,9 @@ const createSectorSchema = z.object({
 });
 
 const updateSectorSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^\d+$/, { message: "Invalid sector ID" }),
+  }),
   body: z.object({
     name: z.string().min(1).optional(),
     type: z.enum(["live_trading", "paper_trading"]).optional(),
@@ -29,22 +32,21 @@ const sectorIdSchema = z.object({
   }),
 });
 
-// All routes require authentication
 router.use(protect);
 
-// GET /sectors - Get all sectors for user
+// GET /api/sectors - Get all sectors for authenticated user
 router.get("/", sectorController.getAllSectors);
 
-// GET /sectors/:id - Get specific sector with orbs
+// GET /api/sectors/:id - Get specific sector with orbs for authenticated user
 router.get("/:id", validate(sectorIdSchema), sectorController.getSectorById);
 
-// POST /sectors - Create new sector
+// POST /api/sectors - Create new sector for authenticated user
 router.post("/", validate(createSectorSchema), sectorController.createSector);
 
-// PUT /sectors/:id - Update sector
-router.put("/:id", validate(sectorIdSchema), validate(updateSectorSchema), sectorController.updateSector);
+// PUT /api/sectors/:id - Update authenticated user's sector
+router.put("/:id", validate(updateSectorSchema), sectorController.updateSector);
 
-// DELETE /sectors/:id - Delete sector
+// DELETE /api/sectors/:id - Delete authenticated user's sector
 router.delete("/:id", validate(sectorIdSchema), sectorController.deleteSector);
 
 export default router;
