@@ -212,7 +212,7 @@ export interface PositionEnteredContent {
 }
 
 export interface PositionExitedContent {
-  exit_type: "full" | "partial" | "stop_loss" | "take_profit" | "user";
+  exit_type: "stop_loss" | "take_profit" | "user";
   exit_amount: string;
   pnl: string;
   reasoning: string;
