@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 
-import { db } from "@/infrastructure/database/turso-connection";
-import { NewSector, SectorUpdate } from "@/models/Sector";
+import { tradespaceService } from "@/services/user/tradespace-service";
 
 interface CreateSectorRequestBody {
   name: string;
@@ -16,22 +15,10 @@ interface UpdateSectorRequestBody {
 }
 
 const sectorController = {
-  // GET /sectors - Get all sectors for authenticated user
   async getAllSectors(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      const sectors = await db
-        .selectFrom("sectors")
-        .selectAll()
-        .where("user_id", "=", userId)
-        .orderBy("created_at", "desc")
-        .execute();
-
+      const userId = req.user.id;
+      const sectors = await tradespaceService.getUserSectors(userId);
       res.json({ sectors });
     } catch (error) {
       console.error("Error fetching sectors:", error);
@@ -39,71 +26,39 @@ const sectorController = {
     }
   },
 
-  // GET /sectors/:id - Get specific sector with orbs
   async getSectorById(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const sectorId = parseInt(req.params.id);
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      const sector = await db
-        .selectFrom("sectors")
-        .selectAll()
-        .where("id", "=", sectorId)
-        .where("user_id", "=", userId)
-        .executeTakeFirst();
-
+      const sector = await tradespaceService.getSectorById(sectorId, userId);
       if (!sector) {
         res.status(404).json({ error: "Sector not found" });
         return;
       }
 
-      // Get orbs for this sector
-      const orbs = await db
-        .selectFrom("orbs")
-        .selectAll()
-        .where("sector_id", "=", sectorId)
-        .execute();
-
+      const orbs = await tradespaceService.getOrbsBySector(sectorId, userId);
       res.json({ sector: { ...sector, orbs } });
     } catch (error) {
       console.error("Error fetching sector:", error);
-      res.status(500).json({ error: "Failed to fetch sector" });
+      if (error instanceof Error && error.message === "Sector not found") {
+        res.status(404).json({ error: "Sector not found" });
+      } else {
+        res.status(500).json({ error: "Failed to fetch sector" });
+      }
     }
   },
 
-  // POST /sectors - Create new sector
   async createSector(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
-      const { name, type, settings }: CreateSectorRequestBody = req.body;
+      const userId = req.user.id;
+      const sectorData: CreateSectorRequestBody = req.body;
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      if (!name || !type) {
-        res.status(400).json({ error: "Name and type are required" });
-        return;
-      }
-
-      const newSector: NewSector = {
-        user_id: userId,
-        name,
-        type,
-        settings: settings ? JSON.stringify(settings) : "{}",
-      };
-
-      const result = await db
-        .insertInto("sectors")
-        .values(newSector)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+      const result = await tradespaceService.createSector(userId, {
+        name: sectorData.name,
+        type: sectorData.type,
+        settings: sectorData.settings ? JSON.stringify(sectorData.settings) : "{}",
+      });
 
       res.status(201).json({ sector: result });
     } catch (error) {
@@ -112,82 +67,44 @@ const sectorController = {
     }
   },
 
-  // PUT /sectors/:id - Update sector
   async updateSector(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const sectorId = parseInt(req.params.id);
       const updates: UpdateSectorRequestBody = req.body;
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Verify sector belongs to user
-      const existingSector = await db
-        .selectFrom("sectors")
-        .select("id")
-        .where("id", "=", sectorId)
-        .where("user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (!existingSector) {
-        res.status(404).json({ error: "Sector not found" });
-        return;
-      }
-
       const { settings, ...otherUpdates } = updates;
-      const updateData: SectorUpdate = {
+      const updateData = {
         ...otherUpdates,
         ...(settings && { settings: JSON.stringify(settings) }),
-        updated_at: new Date().toISOString(),
       };
 
-      const result = await db
-        .updateTable("sectors")
-        .set(updateData)
-        .where("id", "=", sectorId)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-
+      const result = await tradespaceService.updateSector(sectorId, userId, updateData);
       res.json({ sector: result });
     } catch (error) {
       console.error("Error updating sector:", error);
-      res.status(500).json({ error: "Failed to update sector" });
+      if (error instanceof Error && error.message === "Sector not found") {
+        res.status(404).json({ error: "Sector not found" });
+      } else {
+        res.status(500).json({ error: "Failed to update sector" });
+      }
     }
   },
 
-  // DELETE /sectors/:id - Delete sector
   async deleteSector(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const sectorId = parseInt(req.params.id);
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Verify sector belongs to user
-      const existingSector = await db
-        .selectFrom("sectors")
-        .select("id")
-        .where("id", "=", sectorId)
-        .where("user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (!existingSector) {
-        res.status(404).json({ error: "Sector not found" });
-        return;
-      }
-
-      await db.deleteFrom("sectors").where("id", "=", sectorId).execute();
-
+      await tradespaceService.deleteSector(sectorId, userId);
       res.json({ message: "Sector deleted successfully" });
     } catch (error) {
       console.error("Error deleting sector:", error);
-      res.status(500).json({ error: "Failed to delete sector" });
+      if (error instanceof Error && error.message === "Sector not found") {
+        res.status(404).json({ error: "Sector not found" });
+      } else {
+        res.status(500).json({ error: "Failed to delete sector" });
+      }
     }
   },
 };
