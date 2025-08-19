@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { AgentRuntimeContextSchema } from "@/types/context";
 import { createJournalEntry } from "@/services/trading/trade-service";
+import { AgentRuntimeContextSchema } from "@/types/context";
 
 // Define the AI analysis and reflection types
 const aiAnalysisTypes = [

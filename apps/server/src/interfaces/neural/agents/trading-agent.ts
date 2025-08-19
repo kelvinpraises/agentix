@@ -3,7 +3,7 @@ import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
 
 import { model } from "@/config/ai-model-config";
-import { allTools } from "@/services/ai-agent/tools";
+import { allTools } from "@/interfaces/neural/tools";
 
 const memory = new Memory({
   storage: new LibSQLStore({

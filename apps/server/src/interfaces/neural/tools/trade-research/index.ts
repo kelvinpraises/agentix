@@ -1,9 +1,9 @@
-import { getCoinListTool } from "@/services/ai-agent/tools/trade-research/items/get-coin-list-tool";
-import { getMarketChartTool } from "@/services/ai-agent/tools/trade-research/items/get-market-chart-tool";
-import { getMarketDataTool } from "@/services/ai-agent/tools/trade-research/items/get-market-data-tool";
-import { getOHLCTool } from "@/services/ai-agent/tools/trade-research/items/get-ohlc-tool";
-import { getSentimentTool } from "@/services/ai-agent/tools/trade-research/items/get-sentiment-tool";
-import { globalSearchTool } from "@/services/ai-agent/tools/trade-research/items/global-search-tool";
+import { getCoinListTool } from "@/interfaces/neural/tools/trade-research/items/get-coin-list-tool";
+import { getMarketChartTool } from "@/interfaces/neural/tools/trade-research/items/get-market-chart-tool";
+import { getMarketDataTool } from "@/interfaces/neural/tools/trade-research/items/get-market-data-tool";
+import { getOHLCTool } from "@/interfaces/neural/tools/trade-research/items/get-ohlc-tool";
+import { getSentimentTool } from "@/interfaces/neural/tools/trade-research/items/get-sentiment-tool";
+import { globalSearchTool } from "@/interfaces/neural/tools/trade-research/items/global-search-tool";
 
 export const tradeResearchTools = {
   getCoinList: getCoinListTool,
