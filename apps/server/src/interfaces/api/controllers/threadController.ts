@@ -1,18 +1,17 @@
 import { Request, Response } from "express";
 
-import { db } from "@/infrastructure/database/turso-connection";
-import { NewThread, ThreadUpdate } from "@/models/Thread";
+import { tradespaceService } from "@/services/user/tradespace-service";
+import { ThreadType } from "@/types/orb";
 
 interface CreateThreadRequestBody {
   orb_id: number;
-  type: "dex" | "bridge" | "lending" | "yield_farming";
+  type: ThreadType;
   provider: string;
   enabled?: boolean;
   config_json: Record<string, any>;
 }
 
 interface UpdateThreadRequestBody {
-  type?: "dex" | "bridge" | "lending" | "yield_farming";
   provider?: string;
   enabled?: boolean;
   config_json?: Record<string, any>;
@@ -22,64 +21,28 @@ const threadController = {
   // GET /threads/:orbId - Get all threads for an orb
   async getThreadsByOrb(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const orbId = parseInt(req.params.orbId);
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Verify orb belongs to user's sector
-      const orb = await db
-        .selectFrom("orbs")
-        .innerJoin("sectors", "orbs.sector_id", "sectors.id")
-        .select("orbs.id")
-        .where("orbs.id", "=", orbId)
-        .where("sectors.user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (!orb) {
-        res.status(404).json({ error: "Orb not found" });
-        return;
-      }
-
-      const threads = await db
-        .selectFrom("threads")
-        .selectAll()
-        .where("orb_id", "=", orbId)
-        .orderBy("type")
-        .orderBy("provider")
-        .execute();
-
+      const threads = await tradespaceService.getThreadsByOrb(orbId, userId);
       res.json({ threads });
     } catch (error) {
       console.error("Error fetching threads:", error);
-      res.status(500).json({ error: "Failed to fetch threads" });
+      if (error instanceof Error && error.message === "Orb not found") {
+        res.status(404).json({ error: "Orb not found" });
+      } else {
+        res.status(500).json({ error: "Failed to fetch threads" });
+      }
     }
   },
 
   // GET /threads/detail/:id - Get specific thread
   async getThreadById(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const threadId = parseInt(req.params.id);
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Get thread with ownership verification
-      const thread = await db
-        .selectFrom("threads")
-        .innerJoin("orbs", "threads.orb_id", "orbs.id")
-        .innerJoin("sectors", "orbs.sector_id", "sectors.id")
-        .selectAll("threads")
-        .where("threads.id", "=", threadId)
-        .where("sectors.user_id", "=", userId)
-        .executeTakeFirst();
-
+      const thread = await tradespaceService.getThreadById(threadId, userId);
       if (!thread) {
         res.status(404).json({ error: "Thread not found" });
         return;
@@ -95,183 +58,91 @@ const threadController = {
   // POST /threads - Create new thread
   async createThread(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
-      const {
-        orb_id,
-        type,
-        provider,
-        enabled = true,
-        config_json,
-      }: CreateThreadRequestBody = req.body;
+      const userId = req.user.id;
+      const threadData: CreateThreadRequestBody = req.body;
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      if (!orb_id || !type || !provider || !config_json) {
-        res.status(400).json({ error: "Orb ID, type, provider, and config are required" });
-        return;
-      }
-
-      // Verify orb belongs to user's sector
-      const orb = await db
-        .selectFrom("orbs")
-        .innerJoin("sectors", "orbs.sector_id", "sectors.id")
-        .select("orbs.id")
-        .where("orbs.id", "=", orb_id)
-        .where("sectors.user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (!orb) {
-        res.status(404).json({ error: "Orb not found" });
-        return;
-      }
-
-      const newThread: NewThread = {
-        orb_id,
-        type,
-        provider,
-        enabled,
-        config_json: JSON.stringify(config_json),
-      };
-
-      const result = await db
-        .insertInto("threads")
-        .values(newThread)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+      const result = await tradespaceService.createThread(userId, {
+        orb_id: threadData.orb_id,
+        type: threadData.type,
+        provider: threadData.provider,
+        enabled: threadData.enabled,
+        config_json: threadData.config_json,
+      });
 
       res.status(201).json({ thread: result });
     } catch (error) {
       console.error("Error creating thread:", error);
-      res.status(500).json({ error: "Failed to create thread" });
+      if (error instanceof Error && error.message === "Orb not found") {
+        res.status(404).json({ error: "Orb not found" });
+      } else {
+        res.status(500).json({ error: "Failed to create thread" });
+      }
     }
   },
 
   // PUT /threads/:id - Update thread
   async updateThread(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const threadId = parseInt(req.params.id);
       const updates: UpdateThreadRequestBody = req.body;
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Verify thread belongs to user's orb/sector
-      const existingThread = await db
-        .selectFrom("threads")
-        .innerJoin("orbs", "threads.orb_id", "orbs.id")
-        .innerJoin("sectors", "orbs.sector_id", "sectors.id")
-        .select("threads.id")
-        .where("threads.id", "=", threadId)
-        .where("sectors.user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (!existingThread) {
-        res.status(404).json({ error: "Thread not found" });
-        return;
-      }
-
-      const { config_json, ...otherUpdates } = updates;
-      const updateData: ThreadUpdate = {
-        ...otherUpdates,
-        ...(config_json && { config_json: JSON.stringify(config_json) }),
-        updated_at: new Date().toISOString(),
-      };
-
-      const result = await db
-        .updateTable("threads")
-        .set(updateData)
-        .where("id", "=", threadId)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-
+      const result = await tradespaceService.updateThread(threadId, userId, updates);
       res.json({ thread: result });
     } catch (error) {
       console.error("Error updating thread:", error);
-      res.status(500).json({ error: "Failed to update thread" });
+      if (error instanceof Error && error.message === "Thread not found") {
+        res.status(404).json({ error: "Thread not found" });
+      } else {
+        res.status(500).json({ error: "Failed to update thread" });
+      }
     }
   },
 
   // DELETE /threads/:id - Delete thread
   async deleteThread(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const threadId = parseInt(req.params.id);
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Verify thread belongs to user's orb/sector
-      const existingThread = await db
-        .selectFrom("threads")
-        .innerJoin("orbs", "threads.orb_id", "orbs.id")
-        .innerJoin("sectors", "orbs.sector_id", "sectors.id")
-        .select("threads.id")
-        .where("threads.id", "=", threadId)
-        .where("sectors.user_id", "=", userId)
-        .executeTakeFirst();
-
-      if (!existingThread) {
-        res.status(404).json({ error: "Thread not found" });
-        return;
-      }
-
-      await db.deleteFrom("threads").where("id", "=", threadId).execute();
-
+      await tradespaceService.deleteThread(threadId, userId);
       res.json({ message: "Thread deleted successfully" });
     } catch (error) {
       console.error("Error deleting thread:", error);
-      res.status(500).json({ error: "Failed to delete thread" });
+      if (error instanceof Error && error.message === "Thread not found") {
+        res.status(404).json({ error: "Thread not found" });
+      } else {
+        res.status(500).json({ error: "Failed to delete thread" });
+      }
     }
   },
 
   // POST /threads/:id/toggle - Toggle thread enabled/disabled
   async toggleThread(req: Request, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user.id;
       const threadId = parseInt(req.params.id);
 
-      if (!userId) {
-        res.status(401).json({ error: "Unauthorized" });
-        return;
-      }
-
-      // Get current thread state with ownership verification
-      const thread = await db
-        .selectFrom("threads")
-        .innerJoin("orbs", "threads.orb_id", "orbs.id")
-        .innerJoin("sectors", "orbs.sector_id", "sectors.id")
-        .select(["threads.id", "threads.enabled"])
-        .where("threads.id", "=", threadId)
-        .where("sectors.user_id", "=", userId)
-        .executeTakeFirst();
-
+      // Get current thread state
+      const thread = await tradespaceService.getThreadById(threadId, userId);
       if (!thread) {
         res.status(404).json({ error: "Thread not found" });
         return;
       }
 
-      const result = await db
-        .updateTable("threads")
-        .set({
-          enabled: !thread.enabled,
-          updated_at: new Date().toISOString(),
-        })
-        .where("id", "=", threadId)
-        .returningAll()
-        .executeTakeFirstOrThrow();
+      // Toggle the enabled state
+      const result = await tradespaceService.updateThread(threadId, userId, {
+        enabled: !thread.enabled,
+      });
 
       res.json({ thread: result });
     } catch (error) {
       console.error("Error toggling thread:", error);
-      res.status(500).json({ error: "Failed to toggle thread" });
+      if (error instanceof Error && error.message === "Thread not found") {
+        res.status(404).json({ error: "Thread not found" });
+      } else {
+        res.status(500).json({ error: "Failed to toggle thread" });
+      }
     }
   },
 };
