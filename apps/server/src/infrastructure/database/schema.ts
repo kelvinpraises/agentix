@@ -18,6 +18,7 @@ export interface SectorsTable {
   name: string;
   type: "live_trading" | "paper_trading";
   settings: JSONColumnType<Record<string, any> | null>;
+  active_policy_version: number | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
