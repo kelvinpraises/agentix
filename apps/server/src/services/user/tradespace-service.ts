@@ -1,14 +1,51 @@
 import { db } from "@/infrastructure/database/turso-connection";
-import { NewSector, SectorUpdate } from "@/models/Sector";
 import { NewOrb, OrbUpdate } from "@/models/Orb";
-import { NewThread, ThreadUpdate } from "@/models/Thread";
 import { PolicyUpdate } from "@/models/Policy";
+import { NewSector, SectorUpdate } from "@/models/Sector";
+import { NewThread, ThreadUpdate } from "@/models/Thread";
 import { ChainType, ThreadType } from "@/types/orb";
 import { PolicyDocument } from "@/types/policy";
 
+// TypeScript interfaces for getUserTradespace return type
+interface TradespaceThread {
+  id: number;
+  type: ThreadType;
+  provider: string;
+  enabled: boolean;
+  config_json: Record<string, any>;
+}
+
+interface TradespaceOrb {
+  id: number;
+  name: string;
+  chain: ChainType;
+  wallet_address: string | null;
+  asset_pairs: Record<string, number> | null;
+  config_json: Record<string, any> | null;
+  threads: TradespaceThread[];
+}
+
+interface TradespaceSector {
+  id: number;
+  name: string;
+  type: "live_trading" | "paper_trading";
+  settings: Record<string, any> | null;
+  created_at: Date;
+  orbs: TradespaceOrb[];
+}
+
+interface UserTradespace {
+  id: number;
+  email: string;
+  created_at: Date;
+  updated_at: Date | null;
+  password_hash: string;
+  sectors: TradespaceSector[];
+}
+
 export const tradespaceService = {
   // ==================== SECTOR OPERATIONS ====================
-  
+
   async getUserSectors(userId: number) {
     return await db
       .selectFrom("sectors")
@@ -27,7 +64,7 @@ export const tradespaceService = {
       .executeTakeFirst();
   },
 
-  async createSector(userId: number, sectorData: Omit<NewSector, 'user_id'>) {
+  async createSector(userId: number, sectorData: Omit<NewSector, "user_id">) {
     const newSector: NewSector = {
       ...sectorData,
       user_id: userId,
@@ -112,14 +149,17 @@ export const tradespaceService = {
     return { ...orb, threads };
   },
 
-  async createOrb(userId: number, orbData: {
-    sector_id: number;
-    name: string;
-    chain: ChainType;
-    wallet_address?: string;
-    asset_pairs?: Record<string, number>;
-    config_json?: Record<string, any>;
-  }) {
+  async createOrb(
+    userId: number,
+    orbData: {
+      sector_id: number;
+      name: string;
+      chain: ChainType;
+      wallet_address?: string;
+      asset_pairs?: Record<string, number>;
+      config_json?: Record<string, any>;
+    }
+  ) {
     // Verify sector ownership
     const sector = await this.getSectorById(orbData.sector_id, userId);
     if (!sector) {
@@ -142,12 +182,16 @@ export const tradespaceService = {
       .executeTakeFirstOrThrow();
   },
 
-  async updateOrb(orbId: number, userId: number, updates: {
-    name?: string;
-    wallet_address?: string;
-    asset_pairs?: Record<string, number>;
-    config_json?: Record<string, any>;
-  }) {
+  async updateOrb(
+    orbId: number,
+    userId: number,
+    updates: {
+      name?: string;
+      wallet_address?: string;
+      asset_pairs?: Record<string, number>;
+      config_json?: Record<string, any>;
+    }
+  ) {
     // Verify ownership through sector
     const orb = await this.getOrbById(orbId, userId);
     if (!orb) {
@@ -208,13 +252,16 @@ export const tradespaceService = {
       .executeTakeFirst();
   },
 
-  async createThread(userId: number, threadData: {
-    orb_id: number;
-    type: ThreadType;
-    provider: string;
-    enabled?: boolean;
-    config_json?: Record<string, any>;
-  }) {
+  async createThread(
+    userId: number,
+    threadData: {
+      orb_id: number;
+      type: ThreadType;
+      provider: string;
+      enabled?: boolean;
+      config_json?: Record<string, any>;
+    }
+  ) {
     // Verify orb ownership
     const orb = await this.getOrbById(threadData.orb_id, userId);
     if (!orb) {
@@ -236,11 +283,15 @@ export const tradespaceService = {
       .executeTakeFirstOrThrow();
   },
 
-  async updateThread(threadId: number, userId: number, updates: {
-    provider?: string;
-    enabled?: boolean;
-    config_json?: Record<string, any>;
-  }) {
+  async updateThread(
+    threadId: number,
+    userId: number,
+    updates: {
+      provider?: string;
+      enabled?: boolean;
+      config_json?: Record<string, any>;
+    }
+  ) {
     // Verify ownership through orb->sector
     const thread = await this.getThreadById(threadId, userId);
     if (!thread) {
@@ -305,9 +356,9 @@ export const tradespaceService = {
   },
 
   async createSectorPolicy(
-    sectorId: number, 
+    sectorId: number,
     userId: number,
-    policyDocument: PolicyDocument, 
+    policyDocument: PolicyDocument,
     aiCritique?: string
   ) {
     // Verify sector ownership
@@ -337,7 +388,7 @@ export const tradespaceService = {
       .insertInto("sector_policies")
       .values({
         sector_id: sectorId,
-        policy_document: policyDocument,
+        policy_document: JSON.stringify(policyDocument),
         version: nextVersion,
         is_active: true,
         ai_critique: aiCritique || null,
@@ -422,8 +473,8 @@ export const tradespaceService = {
 
   // ==================== COMPLEX QUERIES ====================
 
-  async getUserTradespace(userId: number) {
-    // Reuse the complex query from profile-service
+  async getUserTradespace(userId: number): Promise<UserTradespace | null> {
+    // Get user first
     const user = await db
       .selectFrom("users")
       .where("id", "=", userId)
@@ -432,81 +483,55 @@ export const tradespaceService = {
 
     if (!user) return null;
 
-    const sectors = await db
-      .selectFrom("sectors")
-      .leftJoin("orbs", "orbs.sector_id", "sectors.id")
-      .leftJoin("threads", "threads.orb_id", "orbs.id")
-      .where("sectors.user_id", "=", userId)
-      .select([
-        "sectors.id as sector_id",
-        "sectors.name as sector_name",
-        "sectors.type as sector_type",
-        "sectors.settings as sector_settings",
-        "sectors.created_at as sector_created_at",
-        "orbs.id as orb_id",
-        "orbs.name as orb_name",
-        "orbs.chain as orb_chain",
-        "orbs.wallet_address as orb_wallet_address",
-        "orbs.asset_pairs as orb_asset_pairs",
-        "orbs.config_json as orb_config_json",
-        "threads.id as thread_id",
-        "threads.type as thread_type",
-        "threads.provider as thread_provider",
-        "threads.enabled as thread_enabled",
-        "threads.config_json as thread_config_json",
-      ])
-      .execute();
+    // Get user's sectors using existing method
+    const sectors = await this.getUserSectors(userId);
 
-    // Group results by sector and orb
-    const sectorsMap = new Map();
-    
-    sectors.forEach((row) => {
-      if (!sectorsMap.has(row.sector_id)) {
-        sectorsMap.set(row.sector_id, {
-          id: row.sector_id,
-          name: row.sector_name,
-          type: row.sector_type,
-          settings: row.sector_settings,
-          created_at: row.sector_created_at,
-          orbs: new Map(),
-        });
-      }
+    // For each sector, get its orbs with threads using existing methods
+    const sectorsWithOrbs: TradespaceSector[] = await Promise.all(
+      sectors.map(async (sector) => {
+        const orbs = await this.getOrbsBySector(sector.id, userId);
 
-      const sector = sectorsMap.get(row.sector_id);
-      
-      if (row.orb_id && !sector.orbs.has(row.orb_id)) {
-        sector.orbs.set(row.orb_id, {
-          id: row.orb_id,
-          name: row.orb_name,
-          chain: row.orb_chain,
-          wallet_address: row.orb_wallet_address,
-          asset_pairs: row.orb_asset_pairs,
-          config_json: row.orb_config_json,
-          threads: [],
-        });
-      }
+        // For each orb, get its threads using existing method
+        const orbsWithThreads: TradespaceOrb[] = await Promise.all(
+          orbs.map(async (orb) => {
+            const threads = await this.getThreadsByOrb(orb.id, userId);
 
-      if (row.thread_id && row.orb_id) {
-        const orb = sector.orbs.get(row.orb_id);
-        orb.threads.push({
-          id: row.thread_id,
-          type: row.thread_type,
-          provider: row.thread_provider,
-          enabled: row.thread_enabled,
-          config_json: row.thread_config_json,
-        });
-      }
-    });
+            return {
+              id: orb.id,
+              name: orb.name,
+              chain: orb.chain,
+              wallet_address: orb.wallet_address,
+              asset_pairs: orb.asset_pairs,
+              config_json: orb.config_json,
+              threads: threads.map((thread) => ({
+                id: thread.id,
+                type: thread.type,
+                provider: thread.provider,
+                enabled: thread.enabled,
+                config_json: thread.config_json,
+              })),
+            };
+          })
+        );
 
-    // Convert maps to arrays
-    const sectorsArray = Array.from(sectorsMap.values()).map((sector) => ({
-      ...sector,
-      orbs: Array.from(sector.orbs.values()),
-    }));
+        return {
+          id: sector.id,
+          name: sector.name,
+          type: sector.type,
+          settings: sector.settings,
+          created_at: sector.created_at,
+          orbs: orbsWithThreads,
+        };
+      })
+    );
 
     return {
-      ...user,
-      sectors: sectorsArray,
+      id: user.id,
+      email: user.email,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      password_hash: user.password_hash,
+      sectors: sectorsWithOrbs,
     };
   },
 };
