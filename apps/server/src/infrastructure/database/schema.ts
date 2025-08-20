@@ -59,6 +59,8 @@ export interface ThreadsTable {
 export interface TradeActionsTable {
   id: Generated<number>;
   sector_id: number;
+  orb_id: number | null;
+  trading_pair: string | null;
   status:
     | "ANALYZING" // AI is actively processing, user can interrupt.
     | "REJECTED" // User has rejected the AI's proposal (terminal state).
