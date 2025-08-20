@@ -18,12 +18,13 @@ interface GlobalSearchParams {
   endCrawlDate?: string;
 }
 
-interface SearchResult extends SearchResponse<{
-  type: string;
-  useAutoprompt: true;
-  numResults: number;
-  text: true;
-}> {}
+interface SearchResult
+  extends SearchResponse<{
+    type: string;
+    useAutoprompt: true;
+    numResults: number;
+    text: true;
+  }> {}
 
 // --- API Client ---
 const exa = new Exa(process.env.EXA_API_KEY);
@@ -87,8 +88,10 @@ export const sentimentService = {
       return response;
     } catch (error) {
       console.error(`Failed to perform global search for "${params.searchTerm}":`, error);
-       if (error instanceof Error) {
-        throw new Error(`Failed to perform global search for "${params.searchTerm}": ${error.message}`);
+      if (error instanceof Error) {
+        throw new Error(
+          `Failed to perform global search for "${params.searchTerm}": ${error.message}`
+        );
       }
       throw error;
     }
