@@ -7,12 +7,8 @@ import * as positionMonitor from "@/services/trading/strategies/position-monitor
 import * as rsiStrategy from "@/services/trading/strategies/rsi";
 import * as smaCrossStrategy from "@/services/trading/strategies/sma-cross";
 import * as timeLimitStrategy from "@/services/trading/strategies/time-limit";
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import {
-  getExecutionJournalEntry,
-  getSectorWithUser,
-  getTradeAction
-} from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { PositionEnteredContent } from "@/types/journal";
 import { StrategyContext, StrategyParams } from "@/types/strategy";
 
@@ -32,7 +28,7 @@ module.exports = async (job: SandboxedJob) => {
   try {
     job.log(`[StrategyProcessor] Running engine for trade ${tradeActionId}`);
 
-    const strategies = await strategyManagementService.getStrategies(tradeActionId);
+    const strategies = await strategyService.getStrategies(tradeActionId);
     const activeStrategies = strategies.filter((s) => s.is_active);
 
     if (activeStrategies.length === 0) {
@@ -88,7 +84,7 @@ module.exports = async (job: SandboxedJob) => {
           );
           await sendTradeProposal(context.userId, tradeActionId, 0, "EXIT_POSITION");
 
-          await strategyManagementService.closeAllStrategies(tradeActionId);
+          await strategyService.closeAllStrategies(tradeActionId);
           await strategyQueue.removeJobScheduler(`monitor-trade-${tradeActionId}`);
           break;
         } else if (action === "reassess") {
@@ -121,14 +117,14 @@ const strategyCheckers = {
 async function getTradeContext(tradeActionId: number): Promise<StrategyContext | null> {
   try {
     // Get trade action using service layer
-    const tradeAction = await getTradeAction(tradeActionId);
+    const tradeAction = await tradeActionService.getTradeAction(tradeActionId);
     if (!tradeAction) {
       console.warn(`[StrategyEngine] Trade action ${tradeActionId} not found.`);
       return null;
     }
 
     // Get execution journal entry using service layer
-    const executionEntry = await getExecutionJournalEntry(tradeActionId);
+    const executionEntry = await tradeActionService.getExecutionJournalEntry(tradeActionId);
     if (!executionEntry?.content) {
       console.warn(`[StrategyEngine] No execution entry for trade ${tradeActionId}.`);
       return null;
@@ -142,7 +138,7 @@ async function getTradeContext(tradeActionId: number): Promise<StrategyContext |
     }
 
     // Get sector and user information using service layer
-    const sector = await getSectorWithUser(tradeAction.sector_id);
+    const sector = await tradeActionService.getSectorWithUser(tradeAction.sector_id);
     if (!sector) {
       console.warn(`[StrategyEngine] Sector ${tradeAction.sector_id} not found.`);
       return null;
