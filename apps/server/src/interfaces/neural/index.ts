@@ -3,7 +3,7 @@ import { RuntimeContext } from "@mastra/core/di";
 import { PinoLogger } from "@mastra/loggers";
 
 import { tradingAgent } from "@/interfaces/neural/agents/trading-agent";
-import { startNewTradeAction } from "@/services/trading/trade-service";
+import { startNewTradeAction } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContext } from "@/types/context";
 import { ChainType } from "@/types/orb";
 import { PolicyDocument } from "@/types/policy";
@@ -69,7 +69,7 @@ export const aiAgentService = {
         [
           {
             role: "user",
-            content: `Analyze the market and my current portfolio status within the "${sectorName}" sector (${sectorType}). Based on my sector policy and available orbs/threads, decide the next trading action. The sector context, policy, orbs configuration, wallet balances, and open positions are available in the runtime context. ultimately decide to run with a specific orb with better odds for the trade action. unless only a sinlge orb is available, then run with that orb.`,
+            content: `Analyze the market and my current portfolio status within the "${sectorName}" sector (${sectorType}). Based on my sector policy and available orbs/threads, decide the next trading action. The sector context, policy, orbs configuration, wallet balances, and open positions are available in the runtime context. ultimately decide to run with a specific orb with better odds for the trade action. unless only a single orb is available, then run with that orb.`,
           },
         ],
         {
