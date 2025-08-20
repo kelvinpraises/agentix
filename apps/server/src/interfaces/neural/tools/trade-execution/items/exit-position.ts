@@ -2,21 +2,28 @@ import { createTool } from "@mastra/core";
 import { z } from "zod";
 
 import { strategyQueue } from "@/infrastructure/queues/definitions";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
-import { createJournalEntry, updateTradeStatus } from "@/services/trading/trade-service";
 
 export const exitPositionTool = createTool({
   id: "exitPosition",
-  description: "Immediately closes active positions regardless of strategy conditions.",
+  description:
+    "Executes a SELL order (BID) - selling base currency to get back quote currency (USDC/USDT). Immediately closes active positions regardless of strategy conditions.",
   inputSchema: z.object({
-    reason: z.string(),
+    reason: z.string().describe("Reason for exiting the position"),
+    exitType: z
+      .enum(["stop_loss", "take_profit", "user"])
+      .default("user")
+      .describe("Type of exit"),
+    exitAmount: z.string().optional().describe("Amount being exited"),
+    pnl: z.string().optional().describe("Profit/Loss amount"),
   }),
   outputSchema: z.object({
     success: z.boolean(),
     message: z.string(),
   }),
   execute: async ({ context, runtimeContext }) => {
-    const { reason } = context;
+    const { reason, exitType, exitAmount, pnl } = context;
     const { sectorId, tradeActionId } = AgentRuntimeContextSchema.parse({
       sectorId: runtimeContext.get("sectorId"),
       tradeActionId: runtimeContext.get("tradeActionId"),
@@ -32,20 +39,24 @@ export const exitPositionTool = createTool({
       );
     }
 
-    await updateTradeStatus(tradeActionId, "SUCCEEDED");
+    const finalStatus = exitType === "stop_loss" ? "FAILED" : "SUCCEEDED";
+    await tradeActionService.updateTradeStatus(tradeActionId, finalStatus);
 
-    await createJournalEntry({
-      sectorId,
-      tradeActionId,
-      type: "SYSTEM_ALERT",
-      content: {
-        contentType: "SYSTEM_ALERT",
-        message: `Trade exited with reason: ${reason}`,
-        alert_type: "info",
-        severity: "low",
-        requires_action: false,
-      },
-    });
+    try {
+      await tradeActionService.createJournalEntry({
+        sectorId,
+        tradeActionId,
+        type: "POSITION_EXITED",
+        content: {
+          exit_type: exitType,
+          exit_amount: exitAmount || "0",
+          pnl: pnl || "0",
+          reasoning: reason,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to log position exit:", error);
+    }
 
     return {
       success: true,
