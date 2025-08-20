@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const removeStrategyTool = createTool({
@@ -39,7 +39,7 @@ export const removeStrategyTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const result = await strategyManagementService.removeStrategy(
+    const result = await strategyService.removeStrategy(
       tradeActionId,
       strategy,
       "removeStrategy"
@@ -48,7 +48,7 @@ export const removeStrategyTool = createTool({
     // Log journal entry for strategy removal
     if (result.success) {
       try {
-        await createJournalEntry({
+        await tradeActionService.createJournalEntry({
           sectorId,
           tradeActionId,
           type: "STRATEGY_REMOVED",

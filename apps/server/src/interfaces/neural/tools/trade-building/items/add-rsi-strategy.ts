@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const addRsiStrategyTool = createTool({
@@ -43,7 +43,7 @@ export const addRsiStrategyTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const result = await strategyManagementService.addStrategy(
+    const result = await strategyService.addStrategy(
       tradeActionId,
       "rsi",
       { period, overbought, oversold, action, reasoning },
@@ -53,7 +53,7 @@ export const addRsiStrategyTool = createTool({
     // Log journal entry for RSI strategy addition
     if (result.success) {
       try {
-        await createJournalEntry({
+        await tradeActionService.createJournalEntry({
           sectorId,
           tradeActionId,
           type: "RSI_STRATEGY_ADDED",
@@ -64,7 +64,6 @@ export const addRsiStrategyTool = createTool({
             reasoning,
           },
           confidenceScore,
-          isInternal: false,
         });
       } catch (error) {
         console.error("Failed to log RSI strategy addition:", error);

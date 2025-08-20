@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
+import { strategyService } from "@/services/trading/strategy-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const viewBuildStateTool = createTool({
@@ -20,8 +20,8 @@ export const viewBuildStateTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const strategies = await strategyManagementService.getStrategies(tradeActionId);
-    const analysis = await strategyManagementService.analyzeStrategies(
+    const strategies = await strategyService.getStrategies(tradeActionId);
+    const analysis = await strategyService.analyzeStrategies(
       strategies,
       "viewBuildState"
     );

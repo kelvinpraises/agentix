@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const addSmaCrossStrategyTool = createTool({
@@ -48,7 +48,7 @@ export const addSmaCrossStrategyTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const result = await strategyManagementService.addStrategy(
+    const result = await strategyService.addStrategy(
       tradeActionId,
       "smaCross",
       { fast_period, slow_period, signal_type, action, reasoning },
@@ -57,7 +57,7 @@ export const addSmaCrossStrategyTool = createTool({
 
     if (result.success) {
       try {
-        await createJournalEntry({
+        await tradeActionService.createJournalEntry({
           sectorId,
           tradeActionId,
           type: "SMA_STRATEGY_ADDED",

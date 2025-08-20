@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const updateStrategyTool = createTool({
@@ -44,7 +44,7 @@ export const updateStrategyTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const result = await strategyManagementService.updateStrategy(
+    const result = await strategyService.updateStrategy(
       tradeActionId,
       current_strategy,
       updated_strategy,
@@ -54,7 +54,7 @@ export const updateStrategyTool = createTool({
     // Log journal entry for strategy update
     if (result.success) {
       try {
-        await createJournalEntry({
+        await tradeActionService.createJournalEntry({
           sectorId,
           tradeActionId,
           type: "STRATEGY_UPDATED",

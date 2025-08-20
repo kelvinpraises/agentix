@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const addPositionMonitorTool = createTool({
@@ -41,7 +41,22 @@ export const addPositionMonitorTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const result = await strategyManagementService.addStrategy(
+    // Check if trading pair has been set first
+    const tradingPairInfo = await tradeActionService.getTradingPairInfo(tradeActionId);
+    if (!tradingPairInfo || !tradingPairInfo.trading_pair) {
+      return {
+        success: false,
+        current_strategies: [],
+        warnings: [
+          "Trading pair must be set before adding position monitor. Use setTradingPair tool first.",
+        ],
+        suggestions: [
+          "Use the setTradingPair tool to select an orb and trading pair before setting position monitor.",
+        ],
+      };
+    }
+
+    const result = await strategyService.addStrategy(
       tradeActionId,
       "positionMonitor",
       { stopLoss, takeProfit, reasoning, action: "close" },
@@ -51,7 +66,7 @@ export const addPositionMonitorTool = createTool({
     // Log journal entry for position monitor addition
     if (result.success) {
       try {
-        await createJournalEntry({
+        await tradeActionService.createJournalEntry({
           sectorId,
           tradeActionId,
           type: "POSITION_MONITOR_ADDED",

@@ -1,8 +1,8 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyManagementService } from "@/services/trading/strategy-management-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { strategyService } from "@/services/trading/strategy-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const addTimeLimitTool = createTool({
@@ -41,7 +41,7 @@ export const addTimeLimitTool = createTool({
       tradeActionId: runtimeContext.get("tradeActionId"),
     });
 
-    const result = await strategyManagementService.addStrategy(
+    const result = await strategyService.addStrategy(
       tradeActionId,
       "timeLimit",
       { duration_seconds, action, reasoning },
@@ -52,7 +52,7 @@ export const addTimeLimitTool = createTool({
     if (result.success) {
       try {
         const durationMinutes = Math.round(duration_seconds / 60);
-        await createJournalEntry({
+        await tradeActionService.createJournalEntry({
           sectorId,
           tradeActionId,
           type: "TIME_LIMIT_ADDED",
