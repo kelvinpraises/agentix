@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { createJournalEntry } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 // Define the AI analysis and reflection types
