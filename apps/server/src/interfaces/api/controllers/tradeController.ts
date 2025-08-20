@@ -1,14 +1,7 @@
 import { Request, Response } from "express";
 
 import { aiAgentService } from "@/interfaces/neural";
-import {
-  addUserAction,
-  addUserFeedback,
-  getJournalForTradeAction,
-  getTradeActionById,
-  getTradesBySector,
-  interruptTradeAction,
-} from "@/services/trading/trade-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 
 const tradeController = {
   async getTradesBySector(req: Request, res: Response) {
@@ -21,7 +14,10 @@ const tradeController = {
     const userId = req.user.id;
 
     try {
-      const trades = await getTradesBySector(parseInt(sectorId, 10), userId);
+      const trades = await tradeActionService.getTradesBySector(
+        parseInt(sectorId, 10),
+        userId
+      );
       res.status(200).json(trades);
       return;
     } catch (error) {
@@ -41,14 +37,17 @@ const tradeController = {
     const userId = req.user.id;
 
     try {
-      const tradeAction = await getTradeActionById(parseInt(tradeId, 10), userId);
+      const tradeAction = await tradeActionService.getTradeActionById(
+        parseInt(tradeId, 10),
+        userId
+      );
 
       if (!tradeAction) {
         res.status(404).json({ error: "Trade action not found" });
         return;
       }
 
-      const journalEntries = await getJournalForTradeAction(
+      const journalEntries = await tradeActionService.getJournalForTradeAction(
         tradeAction.id,
         false // Do not include internal entries
       );
@@ -76,7 +75,7 @@ const tradeController = {
     const userId = req.user.id;
 
     try {
-      const entry = await addUserAction(userId, parseInt(tradeId, 10), content);
+      const entry = await tradeActionService.addUserAction(parseInt(tradeId, 10), content);
       res.status(201).json(entry);
       return;
     } catch (error) {
@@ -97,7 +96,7 @@ const tradeController = {
 
     try {
       // First, log the user's intent to interrupt.
-      await interruptTradeAction(userId, parseInt(tradeId, 10));
+      await tradeActionService.interruptTradeAction(parseInt(tradeId, 10));
 
       // Then, signal the AI agent service to stop the analysis.
       const wasRunning = aiAgentService.interruptAnalysis(parseInt(tradeId, 10));
@@ -128,7 +127,10 @@ const tradeController = {
     const userId = req.user.id;
 
     try {
-      const entry = await addUserFeedback(userId, parseInt(tradeId, 10), content);
+      const entry = await tradeActionService.addUserFeedback(
+        parseInt(tradeId, 10),
+        content
+      );
       res.status(201).json(entry);
       return;
     } catch (error) {
