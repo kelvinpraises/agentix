@@ -2,7 +2,7 @@ import { createTool } from "@mastra/core";
 import { z } from "zod";
 
 import { sentimentService } from "@/services/trading/sentiment-service";
-import { createJournalEntry } from "@/services/trading/trade-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const globalSearchTool = createTool({
@@ -39,7 +39,7 @@ export const globalSearchTool = createTool({
         tradeActionId: runtimeContext.get("tradeActionId"),
       });
 
-      await createJournalEntry({
+      await tradeActionService.createJournalEntry({
         sectorId,
         tradeActionId,
         type: "NEWS_DATA_RETRIEVED",
