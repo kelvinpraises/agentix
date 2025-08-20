@@ -20,6 +20,7 @@ export type JournalEntryType =
   | "TIME_LIMIT_ADDED" // addTimeLimit tool output
   | "STRATEGY_REMOVED" // removeStrategy tool output
   | "STRATEGY_UPDATED" // updateStrategy tool output
+  | "TRADING_PAIR_SELECTED" // setTradingPair tool output
   // Execution Phase
   | "POSITION_ENTERED" // enterPosition tool output
   | "POSITION_ADJUSTED" // adjustPosition tool output
@@ -53,6 +54,7 @@ export type JournalContentMap = {
   TIME_LIMIT_ADDED: TimeLimitAddedContent;
   STRATEGY_REMOVED: StrategyRemovedContent;
   STRATEGY_UPDATED: StrategyUpdatedContent;
+  TRADING_PAIR_SELECTED: TradingPairSelectedContent;
   POSITION_ENTERED: PositionEnteredContent;
   POSITION_EXITED: PositionExitedContent;
   RESEARCH_SYNTHESIS: ResearchSynthesisContent;
@@ -85,6 +87,7 @@ export type JournalEntryContent =
   | TimeLimitAddedContent
   | StrategyRemovedContent
   | StrategyUpdatedContent
+  | TradingPairSelectedContent
   // Execution Phase
   | PositionEnteredContent
   | PositionExitedContent
@@ -192,21 +195,23 @@ export interface StrategyUpdatedContent {
   reasoning: string;
 }
 
+export interface TradingPairSelectedContent {
+  orb_id: number;
+  trading_pair: string;
+  chain: string;
+  available_dexes: string[];
+  reasoning: string;
+}
+
 // ============================================================================
 // EXECUTION PHASE CONTENT TYPES
 // ============================================================================
 
 export interface PositionEnteredContent {
   pair: string;
-  from_token: string;
-  to_token: string;
   amount: string;
   chain: ChainType;
   dex: string;
-  slippage: number;
-  stop_loss: number;
-  take_profit: number;
-  risk_level: "low" | "medium" | "high";
   transaction_hash?: string;
   reasoning: string;
 }
