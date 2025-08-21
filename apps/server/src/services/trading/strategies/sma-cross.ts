@@ -1,10 +1,11 @@
 import { SmaCrossParams, StrategyContext } from "@/types/strategy";
+import { python } from "pythonia";
 
 /**
  * Checks for a crossover between two Simple Moving Averages (SMAs).
- * This implementation uses pseudocode for the core TA calculation.
+ * Uses ta-lib via pythonia for accurate SMA calculations.
  *
- * @param params - The parameters for this strategy (periods, condition).
+ * @param params - The parameters for this strategy (fast_period, slow_period, signal_type).
  * @param context - The shared context containing historical market data.
  * @returns A boolean indicating if the exit condition was met.
  */
@@ -20,29 +21,39 @@ export async function check(
     return false;
   }
 
-  // --- PSEUDOCODE ---
-  // In a real implementation, this section would be replaced with calls
-  // to a robust library like 'ta-lib' via a Python bridge.
+  const np = await python("numpy");
+  const talib = await python("talib");
+  const json = await python("json");
 
-  // 1. Extract the closing prices from the historical data.
-  // const closingPrices = historicalData.map((data: any) => data.price);
+  const closingPrices = historicalData.map((data: any) => data.price);
+  
+  // Calculate Fast SMA
+  const fast_sma_output = await talib.SMA(await np.array(closingPrices, "float64"), fast_period);
+  const fast_sma_list = await fast_sma_output.tolist();
+  const fast_sma_json = await json.dumps(fast_sma_list);
+  const fast_sma_fixed = fast_sma_json.replace(/\bNaN\b/g, "null");
+  const fastSma = JSON.parse(fast_sma_fixed);
+  
+  // Calculate Slow SMA
+  const slow_sma_output = await talib.SMA(await np.array(closingPrices, "float64"), slow_period);
+  const slow_sma_list = await slow_sma_output.tolist();
+  const slow_sma_json = await json.dumps(slow_sma_list);
+  const slow_sma_fixed = slow_sma_json.replace(/\bNaN\b/g, "null");
+  const slowSma = JSON.parse(slow_sma_fixed);
 
-  // 2. Call the external TA library to calculate both SMAs.
-  // const fastSma = await pythonTaLib.sma(closingPrices, fast_period);
-  // const slowSma = await pythonTaLib.sma(closingPrices, slow_period);
-  const fastSma = [50, 52]; // Placeholder values for demonstration
-  const slowSma = [51, 51]; // Placeholder values for demonstration
-
-  // 3. Get the most recent two values for each SMA to check for a cross.
   const lastFastSma = fastSma[fastSma.length - 1];
   const prevFastSma = fastSma[fastSma.length - 2];
   const lastSlowSma = slowSma[slowSma.length - 1];
   const prevSlowSma = slowSma[slowSma.length - 2];
 
+  if (lastFastSma === null || prevFastSma === null || lastSlowSma === null || prevSlowSma === null) {
+    console.warn(`[SMACross] SMA calculation returned null values for trade ${tradeActionId}. Not enough data.`);
+    return false;
+  }
+
   console.log(
     `[SMACross] Trade ${tradeActionId}: Fast SMA: ${lastFastSma}, Slow SMA: ${lastSlowSma}.`
   );
-  // --- END PSEUDOCODE ---
 
   // Check for bearish cross down (fast crosses below slow)
   const crossDown = (prevFastSma >= prevSlowSma && lastFastSma < lastSlowSma);
