@@ -1,10 +1,11 @@
 import { RsiParams, StrategyContext } from "@/types/strategy";
+import { python } from "pythonia";
 
 /**
  * Checks if the Relative Strength Index (RSI) has crossed a certain level.
- * This implementation uses pseudocode for the core TA calculation.
+ * Uses ta-lib via pythonia for accurate RSI calculation.
  *
- * @param params - The parameters for this strategy (period, level, condition).
+ * @param params - The parameters for this strategy (period, overbought, oversold).
  * @param context - The shared context containing historical market data.
  * @returns A boolean indicating if the exit condition was met.
  */
@@ -20,22 +21,29 @@ export async function check(
     return false;
   }
 
-  // --- PSEUDOCODE ---
-  // In a real implementation, this section would be replaced with a call
-  // to a robust library like 'ta-lib' via a Python bridge.
+  const np = await python("numpy");
+  const talib = await python("talib");
+  const json = await python("json");
 
-  // 1. Extract the closing prices from the historical data.
-  // const closingPrices = historicalData.map((data: any) => data.price);
-
-  // 2. Call the external TA library to calculate the RSI.
-  // const currentRsi = await pythonTaLib.rsi(closingPrices, period);
-  const currentRsi = 75; // Placeholder value for demonstration
+  const closingPrices = historicalData.map((data: any) => data.price);
+  
+  const rsi_output = await talib.RSI(await np.array(closingPrices, "float64"), period);
+  const rsi_list = await rsi_output.tolist();
+  
+  const rsi_json_string = await json.dumps(rsi_list);
+  const fixed_rsi_string = rsi_json_string.replace(/\bNaN\b/g, "null");
+  const rsi_js_array = JSON.parse(fixed_rsi_string);
+  
+  const currentRsi = rsi_js_array[rsi_js_array.length - 1];
+  
+  if (currentRsi === null) {
+    console.warn(`[RSI] RSI calculation returned null for trade ${tradeActionId}. Not enough data.`);
+    return false;
+  }
 
   console.log(
     `[RSI] Trade ${tradeActionId}: Current RSI(${period}) is ${currentRsi}. Overbought: ${overbought}, Oversold: ${oversold}.`
   );
-
-  // --- END PSEUDOCODE ---
 
   // Check for overbought condition (potential sell signal)
   if (currentRsi >= overbought) {
