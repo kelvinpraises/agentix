@@ -33,6 +33,7 @@
     "kysely": "^0.28.2",
     "node-cron": "^4.2.0",
     "ollama-ai-provider": "^1.2.0",
+    "pythonia": "^1.2.4",
     "tsx": "^4.20.3",
     "zod": "^3.25.76"
   },
