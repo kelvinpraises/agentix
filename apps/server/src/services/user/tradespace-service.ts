@@ -3,6 +3,7 @@ import { NewOrb, OrbUpdate } from "@/models/Orb";
 import { PolicyUpdate } from "@/models/Policy";
 import { NewSector, SectorUpdate } from "@/models/Sector";
 import { NewThread, ThreadUpdate } from "@/models/Thread";
+import { walletService } from "@/services/wallets/wallet-service";
 import { ChainType, ThreadType } from "@/types/orb";
 import { PolicyDocument } from "@/types/policy";
 
@@ -19,8 +20,8 @@ interface TradespaceOrb {
   id: number;
   name: string;
   chain: ChainType;
-  wallet_address: string | null;
-  asset_pairs: Record<string, number> | null;
+  wallet_address: string;
+  asset_pairs: Record<string, number>;
   config_json: Record<string, any> | null;
   threads: TradespaceThread[];
 }
@@ -155,8 +156,7 @@ export const tradespaceService = {
       sector_id: number;
       name: string;
       chain: ChainType;
-      wallet_address?: string;
-      asset_pairs?: Record<string, number>;
+      asset_pairs: Record<string, number>;
       config_json?: Record<string, any>;
     }
   ) {
@@ -166,12 +166,34 @@ export const tradespaceService = {
       throw new Error("Sector not found");
     }
 
+    // Always generate wallet synchronously
+    let walletAddress: string;
+    let privyWalletId: string;
+
+    try {
+      const orbId = `orb_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      const walletResult = await walletService.generateWallet(orbId, orbData.chain);
+      walletAddress = walletResult.address;
+
+      // For EVM chains, store the privy wallet ID (from publicKey field)
+      if (orbData.chain !== "icp") {
+        privyWalletId = walletResult.publicKey || walletResult.address;
+      } else {
+        // For ICP, we use a different identifier
+        privyWalletId = orbId; // Use the generated orb ID as privy wallet ID for ICP
+      }
+    } catch (error) {
+      console.error(`Failed to generate wallet for orb: ${error}`);
+      throw new Error(`Failed to generate ${orbData.chain} wallet for orb`);
+    }
+
     const newOrb: NewOrb = {
       sector_id: orbData.sector_id,
       name: orbData.name,
       chain: orbData.chain,
-      wallet_address: orbData.wallet_address || null,
-      asset_pairs: orbData.asset_pairs ? JSON.stringify(orbData.asset_pairs) : "{}",
+      wallet_address: walletAddress,
+      privy_wallet_id: privyWalletId,
+      asset_pairs: JSON.stringify(orbData.asset_pairs),
       config_json: orbData.config_json ? JSON.stringify(orbData.config_json) : "{}",
     };
 
@@ -187,7 +209,6 @@ export const tradespaceService = {
     userId: number,
     updates: {
       name?: string;
-      wallet_address?: string;
       asset_pairs?: Record<string, number>;
       config_json?: Record<string, any>;
     }
