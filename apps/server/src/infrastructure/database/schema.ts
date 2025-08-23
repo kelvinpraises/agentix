@@ -38,8 +38,9 @@ export interface OrbsTable {
   sector_id: number;
   name: string;
   chain: ChainType;
-  wallet_address: string | null;
-  asset_pairs: JSONColumnType<Record<string, number> | null>;
+  wallet_address: string;
+  privy_wallet_id: string;
+  asset_pairs: JSONColumnType<Record<string, number>>;
   config_json: JSONColumnType<Record<string, any> | null>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
