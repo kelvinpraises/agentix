@@ -1,4 +1,4 @@
-export const CHAINS = ["ethereum", "solana", "sei", "hyperliquid"] as const;
+export const CHAINS = ["ethereum", "solana", "sei", "hyperliquid", "icp"] as const;
 export type ChainType = (typeof CHAINS)[number];
 
 export interface AssetPairs {
