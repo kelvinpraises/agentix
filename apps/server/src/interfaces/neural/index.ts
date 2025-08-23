@@ -3,7 +3,7 @@ import { RuntimeContext } from "@mastra/core/di";
 import { PinoLogger } from "@mastra/loggers";
 
 import { tradingAgent } from "@/interfaces/neural/agents/trading-agent";
-import { startNewTradeAction } from "@/services/trading/trade-action-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContext } from "@/types/context";
 import { ChainType } from "@/types/orb";
 import { PolicyDocument } from "@/types/policy";
@@ -50,7 +50,7 @@ export const aiAgentService = {
       return;
     }
 
-    const { id: tradeActionId } = await startNewTradeAction(sectorId);
+    const { id: tradeActionId } = await tradeActionService.startNewTradeAction(sectorId);
 
     const abortController = new AbortController();
     runningAnalyses.set(tradeActionId, abortController);

@@ -6,9 +6,9 @@ export interface AssetPairs {
 }
 
 export interface OrbConfig {
-  default_slippage?: number;
-  gas_strategy?: "slow" | "standard" | "fast";
-  auto_compound?: boolean;
+  // default_slippage?: number;
+  // gas_strategy?: "slow" | "standard" | "fast";
+  // auto_compound?: boolean;
   max_position_size?: number;
 }
 
