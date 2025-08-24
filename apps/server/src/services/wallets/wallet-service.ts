@@ -9,6 +9,8 @@ import {
   generateICPWallet,
   getICPWalletAddress,
   signICPTransaction,
+  executeICPTransfer,
+  queryICRC1Balance,
 } from "@/services/wallets/chains/icp/icp-wallet";
 import { validateOrbId } from "@/services/wallets/shared/providers/base-provider";
 import { createPrivyClient } from "@/services/wallets/shared/providers/privy-provider";
@@ -113,29 +115,66 @@ function createWalletService(privyClient?: PrivyClient, privyWalletAddress?: str
 
     async transfer(
       orbData: IOrbData,
-      transferRequest: IEVMTransferRequest
-    ): Promise<ISignatureResult> {
+      transferRequest: ChainTransaction
+    ): Promise<ISignatureResult | { transactionIndex: bigint; requestId: string }> {
       validateOrbId(orbData.id);
 
-      if (orbData.chain === "icp" || orbData.chain === "solana") {
-        throw new Error(
-          `Unified transfers not supported for ${orbData.chain} - use appropriate chain methods`
-        );
+      switch (orbData.chain) {
+        case "icp":
+          if (!isICPTransaction(transferRequest)) {
+            throw new Error("Invalid transaction type for ICP");
+          }
+          // For ICP, actually execute the transfer on the network
+          return executeICPTransfer(orbData.id, transferRequest, walletAddress, client);
+
+        case "ethereum":
+        case "sei":
+        case "hyperliquid":
+          if (!isEVMTransaction(transferRequest)) {
+            throw new Error(`Invalid transaction type for ${orbData.chain}`);
+          }
+          if (!orbData.privy_wallet_id) {
+            throw new Error(`Privy wallet ID required for ${orbData.chain} transfer`);
+          }
+          const rawTransaction = createTransferRequest(orbData.chain, transferRequest);
+          return signEVMTransaction(
+            orbData.id,
+            rawTransaction,
+            orbData.privy_wallet_id,
+            client
+          );
+
+        case "solana":
+          throw new Error("Solana transfers not yet implemented");
+
+        default:
+          throw new Error(`Unsupported chain type: ${orbData.chain}`);
       }
+    },
 
-      if (!orbData.privy_wallet_id) {
-        throw new Error(`Privy wallet ID required for ${orbData.chain} transfer`);
+    async getBalance(
+      orbData: IOrbData,
+      tokenAddress?: string,
+      subaccount?: Uint8Array
+    ): Promise<bigint> {
+      validateOrbId(orbData.id);
+
+      switch (orbData.chain) {
+        case "icp":
+          if (!tokenAddress) {
+            throw new Error("Token canister ID required for ICP balance queries");
+          }
+          return queryICRC1Balance(orbData.id, tokenAddress, walletAddress, client, subaccount);
+
+        case "ethereum":
+        case "sei":
+        case "hyperliquid":
+        case "solana":
+          throw new Error(`Balance queries not yet implemented for ${orbData.chain}`);
+
+        default:
+          throw new Error(`Unsupported chain type: ${orbData.chain}`);
       }
-
-      // Convert unified transfer request to raw transaction
-      const rawTransaction = createTransferRequest(orbData.chain, transferRequest);
-
-      return signEVMTransaction(
-        orbData.id,
-        rawTransaction,
-        orbData.privy_wallet_id,
-        client
-      );
     },
   };
 }
