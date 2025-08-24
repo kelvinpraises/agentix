@@ -54,6 +54,7 @@ export const ZICPTransferRequest = z.object({
   amount: z.bigint().nonnegative(),
   fee: z.optional(z.bigint().nonnegative()),
   memo: z.optional(ZICRC1Subaccount),
+  expiryMinutes: z.optional(z.number().positive().default(5)),
 });
 
 // Base EVM transaction properties
