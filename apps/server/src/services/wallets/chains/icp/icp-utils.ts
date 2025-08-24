@@ -1,4 +1,6 @@
 import { IDL } from "@icp-sdk/core/candid";
+import { Principal } from "@icp-sdk/core/principal";
+import { lebEncode } from "@icp-sdk/core/candid";
 import { Secp256k1KeyIdentity } from "@icp-sdk/core/identity/secp256k1";
 import { sha256 } from "@noble/hashes/sha2";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
@@ -88,6 +90,36 @@ export function parseICPAmount(amount: string, decimals: number): bigint {
   return BigInt(Math.floor(amountFloat * 10 ** decimals));
 }
 
+// ICP Domain separator for request signing
+export const IC_DOMAIN_SEPARATOR = new TextEncoder().encode("\x0Aic-request");
+
+// Custom Expiry class for request preparation
+export class Expiry {
+  constructor(private readonly _value: bigint) {}
+
+  public toHash(): ArrayBuffer {
+    const encoded = lebEncode(this._value);
+    return encoded instanceof Uint8Array
+      ? (encoded.buffer.slice(0) as ArrayBuffer)
+      : (encoded as ArrayBuffer);
+  }
+}
+
+// Prepare ICP request for signing
+export function prepareRequest(req: any): any {
+  const sender =
+    typeof req.sender === "string" ? Principal.fromText(req.sender) : req.sender;
+
+  const ingress_expiry = new Expiry(req.ingress_expiry);
+
+  return {
+    ...req,
+    canister_id: Principal.fromText(req.canister_id),
+    sender,
+    ingress_expiry,
+  };
+}
+
 // ICRC-1 Candid schema
 export const ICRC1_TRANSFER_ARGS_SCHEMA = IDL.Record({
   from_subaccount: IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -99,4 +131,10 @@ export const ICRC1_TRANSFER_ARGS_SCHEMA = IDL.Record({
   fee: IDL.Opt(IDL.Nat),
   memo: IDL.Opt(IDL.Vec(IDL.Nat8)),
   created_at_time: IDL.Opt(IDL.Nat64),
+});
+
+// ICRC-1 Balance query schema
+export const ICRC1_BALANCE_ARGS_SCHEMA = IDL.Record({
+  owner: IDL.Principal,
+  subaccount: IDL.Opt(IDL.Vec(IDL.Nat8)),
 });
