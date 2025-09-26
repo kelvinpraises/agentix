@@ -49,7 +49,7 @@ export interface OrbsTable {
 export interface ThreadsTable {
   id: Generated<number>;
   orb_id: number;
-  type: "dex" | "bridge" | "lending" | "yield_farming";
+  type: "dex" | "bridge" | "lending" | "yield_farming" | "other";
   provider: string;
   enabled: boolean;
   config_json: JSONColumnType<Record<string, any>>;
@@ -105,6 +105,16 @@ export interface PortfolioSnapshotsTable {
   created_at: ColumnType<Date, string | undefined, never>;
 }
 
+export interface SimulatedWalletTable {
+  id: Generated<number>;
+  orb_id: number;
+  wallet_address: string;
+  balances: JSONColumnType<Record<string, string>>;
+  target_chain: ChainType;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
 export interface DB {
   users: UsersTable;
   sectors: SectorsTable;
@@ -115,4 +125,5 @@ export interface DB {
   trade_strategies: TradeStrategiesTable;
   journal_entries: JournalEntriesTable;
   portfolio_snapshots: PortfolioSnapshotsTable;
+  simulated_wallet: SimulatedWalletTable;
 }

@@ -1,6 +1,6 @@
 import z from "zod";
 
-import { ChainType } from "@/types/orb";
+import { CHAINS, ChainType } from "@/types/orb";
 
 // Wallet generation result
 export type IWalletGenerationResult = z.infer<typeof ZWalletGenerationResult>;
@@ -102,14 +102,40 @@ export const ZEVMTransactionRequest = ZBaseEVMTransaction.extend({
 export type IOrbData = z.infer<typeof ZOrbData>;
 export const ZOrbData = z.object({
   id: z.string().min(1),
-  chain: z.enum(["icp", "sei", "hyperliquid", "ethereum", "solana"] as const),
-  wallet_address: z.optional(z.nullable(z.string())),
-  privy_wallet_id: z.optional(z.string()),
+  chain: z.enum(CHAINS),
+  wallet_address: z.string(),
+  privy_wallet_id: z.string(),
+  sectorType: z.enum(["live_trading", "paper_trading"]),
 });
-
 
 export interface WalletError extends Error {
   code: string;
   chainType: ChainType;
   orbId: string;
 }
+
+// Paper wallet types
+export type PaperWalletLedger = Record<string, string>;
+
+export interface SimulatedWallet {
+  id: number;
+  orb_id: number;
+  wallet_address: string;
+  balances: PaperWalletLedger;
+  target_chain: ChainType;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PaperDepositRequest = z.infer<typeof ZPaperDepositRequest>;
+export const ZPaperDepositRequest = z.object({
+  asset: z.string().min(1),
+  amount: z.string().min(1),
+});
+
+export type PaperTransferRequest = z.infer<typeof ZPaperTransferRequest>;
+export const ZPaperTransferRequest = z.object({
+  to: z.string().min(1),
+  asset: z.string().min(1),
+  amount: z.string().min(1),
+});
