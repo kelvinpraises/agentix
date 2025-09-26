@@ -418,7 +418,7 @@ export const generateMockJournalEntries = (
     "POSITION_MONITOR",
   ];
   const symbols = ["ETH", "SOL", "BTC", "USDC", "MATIC"];
-  const chains = ["ethereum", "solana"] as const;
+  const chains = ["ethereum", "solana", "morph", "stellar"] as const;
   const dexes = ["Uniswap", "Jupiter", "1inch"];
 
   for (let i = 0; i < count; i++) {
