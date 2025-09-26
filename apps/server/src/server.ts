@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 
-import tradeCycler from "@/infrastructure/jobs/trading/trade-cycler";
+import tradeCycler from "@/infrastructure/cron/trading/trade-cycler";
 import { errorHandler } from "@/interfaces/api/middleware/errorHandler";
 import authRoutes from "@/interfaces/api/routes/auth";
 import orbRoutes from "@/interfaces/api/routes/orb";
@@ -36,12 +36,13 @@ const BACKEND_PORT = process.env.BACKEND_PORT || 4848;
 
 if (!process.env.BACKEND_PORT) {
   console.warn(
-    `⚠️ [agentix-server]: BACKEND_PORT is not set, using default port ${BACKEND_PORT}`
+    `[agentix-server]: BACKEND_PORT is not set, using default port ${BACKEND_PORT}`
   );
 }
 
 app.listen(BACKEND_PORT, () => {
-  console.log(`🤖 [agentix-server]: running at http://localhost:${BACKEND_PORT}`);
-  // Start the cron jobs
+  console.log(`[agentix-server]: running at http://localhost:${BACKEND_PORT}`);
+
+  // Start crons
   tradeCycler.start();
 });
