@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { aiAgentService } from "@/interfaces/neural";
+import { neuralAgent } from "@/interfaces/neural";
 import { tradeActionService } from "@/services/trading/trade-action-service";
 
 const tradeController = {
@@ -98,8 +98,8 @@ const tradeController = {
       // First, log the user's intent to interrupt.
       await tradeActionService.interruptTradeAction(parseInt(tradeId, 10));
 
-      // Then, signal the AI agent service to stop the analysis.
-      const wasRunning = aiAgentService.interruptAnalysis(parseInt(tradeId, 10));
+      // Then, signal the Neural Agent to stop the analysis.
+      const wasRunning = neuralAgent.interruptAnalysis(parseInt(tradeId, 10));
 
       if (wasRunning) {
         res.status(200).json({ message: "Trade analysis interrupted successfully." });

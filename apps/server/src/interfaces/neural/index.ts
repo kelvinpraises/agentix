@@ -39,13 +39,13 @@ type SectorContext = {
   openPositions: any[];
 };
 
-export const aiAgentService = {
+export const neuralAgent = {
   async runAnalysis(sectorContext: SectorContext) {
     const { sectorName, sectorId, sectorType, orbs } = sectorContext;
 
     if (!orbs || orbs.length === 0) {
       console.warn(
-        `⚠️ [ai-agent-service] No orbs found for sector ${sectorName}. Skipping analysis.`
+        `[ai-agent-service] No orbs found for sector ${sectorName}. Skipping analysis.`
       );
       return;
     }
@@ -60,7 +60,7 @@ export const aiAgentService = {
     runtimeContext.set("sectorId", sectorId);
 
     console.log(
-      `🤖 [ai-agent-service] Starting analysis for sector ${sectorName}, trade action ${tradeActionId}`
+      `[ai-agent-service] Starting analysis for sector ${sectorName}, trade action ${tradeActionId}`
     );
 
     try {
@@ -83,17 +83,17 @@ export const aiAgentService = {
       );
 
       console.log(
-        `✅ [ai-agent-service] Analysis complete for sector ${sectorName}, trade action ${tradeActionId}:`,
+        `[ai-agent-service] Analysis complete for sector ${sectorName}, trade action ${tradeActionId}:`,
         decision
       );
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         console.log(
-          `🛑 [ai-agent-service] Analysis for sector ${sectorName}, trade action ${tradeActionId} was aborted.`
+          `[ai-agent-service] Analysis for sector ${sectorName}, trade action ${tradeActionId} was aborted.`
         );
       } else {
         console.error(
-          `❌ [ai-agent-service] Error during analysis for sector ${sectorName}, trade action ${tradeActionId}:`,
+          `[ai-agent-service] Error during analysis for sector ${sectorName}, trade action ${tradeActionId}:`,
           error
         );
       }
@@ -106,14 +106,14 @@ export const aiAgentService = {
     const abortController = runningAnalyses.get(tradeActionId);
     if (abortController) {
       console.log(
-        `🛑 [ai-agent-service] Interrupting analysis for trade action ${tradeActionId}`
+        `[ai-agent-service] Interrupting analysis for trade action ${tradeActionId}`
       );
       abortController.abort();
       // The 'finally' block in runAnalysis will handle cleanup
       return true;
     }
     console.warn(
-      `⚠️ [ai-agent-service] No running analysis found for trade action ${tradeActionId} to interrupt.`
+      `[ai-agent-service] No running analysis found for trade action ${tradeActionId} to interrupt.`
     );
     return false;
   },
