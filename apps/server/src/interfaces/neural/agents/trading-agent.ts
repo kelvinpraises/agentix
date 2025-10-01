@@ -1,8 +1,8 @@
 import { Agent } from "@mastra/core";
-import { Memory } from "@mastra/memory";
 import { LibSQLStore } from "@mastra/libsql";
+import { Memory } from "@mastra/memory";
 
-import { model } from "@/config/ai-model-config";
+import { model } from "@/interfaces/neural/config";
 import { allTools } from "@/interfaces/neural/tools";
 
 const memory = new Memory({

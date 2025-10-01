@@ -2,6 +2,7 @@ import { addPositionMonitorTool } from "@/interfaces/neural/tools/trade-building
 import { addRsiStrategyTool } from "@/interfaces/neural/tools/trade-building/items/add-rsi-strategy";
 import { addSmaCrossStrategyTool } from "@/interfaces/neural/tools/trade-building/items/add-sma-cross";
 import { addTimeLimitTool } from "@/interfaces/neural/tools/trade-building/items/add-time-limit";
+import { lockOrbSelectionTool } from "@/interfaces/neural/tools/trade-building/items/lock-orb-selection";
 import { removeStrategyTool } from "@/interfaces/neural/tools/trade-building/items/remove-strategy";
 import { setTradingPairTool } from "@/interfaces/neural/tools/trade-building/items/set-trading-pair";
 import { updateStrategyTool } from "@/interfaces/neural/tools/trade-building/items/update-strategy";
@@ -9,6 +10,7 @@ import { viewBuildStateTool } from "@/interfaces/neural/tools/trade-building/ite
 
 export const tradeBuildingTools = {
   setTradingPair: setTradingPairTool,
+  lockOrbSelection: lockOrbSelectionTool,
   addPositionMonitor: addPositionMonitorTool,
   addRsiStrategy: addRsiStrategyTool,
   addSmaCrossStrategy: addSmaCrossStrategyTool,

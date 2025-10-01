@@ -1,12 +1,13 @@
 import { Mastra } from "@mastra/core";
 import { RuntimeContext } from "@mastra/core/di";
 import { PinoLogger } from "@mastra/loggers";
+import { MCPClient } from "@mastra/mcp";
 
 import { tradingAgent } from "@/interfaces/neural/agents/trading-agent";
+import { threadService } from "@/services/threads/thread-service";
 import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContext } from "@/types/context";
-import { ChainType } from "@/types/orb";
-import { PolicyDocument } from "@/types/policy";
+import { SectorContext } from "@/types/sector";
 
 // Central map to manage running agent analyses
 const runningAnalyses = new Map<number, AbortController>();
@@ -19,29 +20,51 @@ export const mastra = new Mastra({
   }),
 });
 
-type SectorContext = {
-  sectorId: number;
-  sectorName: string;
-  sectorType: "live_trading" | "paper_trading";
-  policy: PolicyDocument;
-  orbs: Array<{
-    id: number;
-    name: string;
-    chain: ChainType;
-    assetPairs: Record<string, number> | null;
-    threads: Array<{
-      type: "dex" | "bridge" | "lending" | "yield_farming";
-      provider: string;
-      config: Record<string, any>;
-    }>;
-  }>;
-  walletBalances: Record<string, any>;
-  openPositions: any[];
-};
-
 export const neuralAgent = {
   async runAnalysis(sectorContext: SectorContext) {
     const { sectorName, sectorId, sectorType, orbs } = sectorContext;
+
+    const threadConfigs = orbs
+      .map((orb) =>
+        orb.threads.map((thread) => ({
+          orbId: orb.id,
+          orbName: orb.name,
+          sectorId: sectorId,
+          chain: orb.chain,
+          type: thread.type,
+          providerId: thread.providerId,
+          config: thread.config,
+        }))
+      )
+      .flat();
+
+    // Pre-warm all threads for the orbs in this sector. This ensures lower latency
+    // when the agent decides to use a specific orb during the analysis -> decision phase
+    const threadMCPsPorts = await Promise.all(
+      threadConfigs.map(({ orbId, sectorId, chain, providerId, config }) =>
+        threadService.getOrServeThreadMCP(orbId, sectorId, chain, providerId, config)
+      )
+    );
+
+    // Build dynamic MCP servers object with namespaced tools.
+    // Namespace: orbName_threadType_providerId (e.g., ethereum_l1_dex_uniswap)
+    const mcpServers = Object.fromEntries(
+      threadConfigs.map(({ orbName, type, providerId }, index) => {
+        const serverKey = `${orbName
+          .toLowerCase()
+          .replace(/\s+/g, "_")}_${type}_${providerId}`;
+        const serverUrl = new URL(`http://localhost:${threadMCPsPorts[index].port}/mcp`);
+        return [
+          serverKey,
+          {
+            url: serverUrl,
+            /* TODO: KP enable Authorization header here to mitigate xsrf -> good first issue*/
+          },
+        ];
+      })
+    );
+
+    const threadsMCPs = new MCPClient({ servers: mcpServers });
 
     if (!orbs || orbs.length === 0) {
       console.warn(
@@ -58,6 +81,7 @@ export const neuralAgent = {
     const runtimeContext = new RuntimeContext<AgentRuntimeContext>();
     runtimeContext.set("tradeActionId", tradeActionId);
     runtimeContext.set("sectorId", sectorId);
+    runtimeContext.set("lockedOrbId", null); // Initialize as null, set via lockOrbSelection tool
 
     console.log(
       `[ai-agent-service] Starting analysis for sector ${sectorName}, trade action ${tradeActionId}`
@@ -73,6 +97,7 @@ export const neuralAgent = {
           },
         ],
         {
+          toolsets: await threadsMCPs.getToolsets(),
           runtimeContext,
           abortSignal: abortController.signal,
           memory: {
