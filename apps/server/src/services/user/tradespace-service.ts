@@ -4,14 +4,15 @@ import { PolicyUpdate } from "@/models/Policy";
 import { NewSector, SectorUpdate } from "@/models/Sector";
 import { NewThread, ThreadUpdate } from "@/models/Thread";
 import { walletService } from "@/services/wallets/wallet-service";
-import { ChainType, ThreadType } from "@/types/orb";
+import { ChainType } from "@/types/orb";
 import { PolicyDocument } from "@/types/policy";
+import { ThreadType } from "@/types/threads";
 
 // TypeScript interfaces for getUserTradespace return type
 interface TradespaceThread {
   id: number;
   type: ThreadType;
-  provider: string;
+  provider_id: string;
   enabled: boolean;
   config_json: Record<string, any>;
 }
@@ -158,6 +159,7 @@ export const tradespaceService = {
       chain: ChainType;
       asset_pairs: Record<string, number>;
       config_json?: Record<string, any>;
+      context?: string;
     }
   ) {
     // Verify sector ownership
@@ -172,7 +174,13 @@ export const tradespaceService = {
 
     try {
       const orbId = `orb_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-      const walletResult = await walletService.generateWallet(orbId, orbData.chain);
+      const walletResult = await walletService.generateWallet({
+        id: orbId,
+        chain: orbData.chain,
+        wallet_address: "",
+        privy_wallet_id: "string",
+        sectorType: sector.type,
+      });
       walletAddress = walletResult.address;
 
       // For EVM chains, store the privy wallet ID (from publicKey field)
@@ -195,6 +203,7 @@ export const tradespaceService = {
       privy_wallet_id: privyWalletId,
       asset_pairs: JSON.stringify(orbData.asset_pairs),
       config_json: orbData.config_json ? JSON.stringify(orbData.config_json) : "{}",
+      context: orbData.context || null,
     };
 
     return await db
@@ -211,6 +220,7 @@ export const tradespaceService = {
       name?: string;
       asset_pairs?: Record<string, number>;
       config_json?: Record<string, any>;
+      context?: string;
     }
   ) {
     // Verify ownership through sector
@@ -219,11 +229,12 @@ export const tradespaceService = {
       throw new Error("Orb not found");
     }
 
-    const { asset_pairs, config_json, ...otherUpdates } = updates;
+    const { asset_pairs, config_json, context, ...otherUpdates } = updates;
     const updateData: OrbUpdate = {
       ...otherUpdates,
       ...(asset_pairs && { asset_pairs: JSON.stringify(asset_pairs) }),
       ...(config_json && { config_json: JSON.stringify(config_json) }),
+      ...(context !== undefined && { context }),
       updated_at: new Date().toISOString(),
     };
 
@@ -281,6 +292,7 @@ export const tradespaceService = {
       provider: string;
       enabled?: boolean;
       config_json?: Record<string, any>;
+      description?: string;
     }
   ) {
     // Verify orb ownership
@@ -292,9 +304,10 @@ export const tradespaceService = {
     const newThread: NewThread = {
       orb_id: threadData.orb_id,
       type: threadData.type,
-      provider: threadData.provider,
+      provider_id: threadData.provider,
       enabled: threadData.enabled ?? true,
       config_json: threadData.config_json ? JSON.stringify(threadData.config_json) : "{}",
+      description: threadData.description || null,
     };
 
     return await db
@@ -311,6 +324,7 @@ export const tradespaceService = {
       provider?: string;
       enabled?: boolean;
       config_json?: Record<string, any>;
+      description?: string;
     }
   ) {
     // Verify ownership through orb->sector
@@ -319,10 +333,11 @@ export const tradespaceService = {
       throw new Error("Thread not found");
     }
 
-    const { config_json, ...otherUpdates } = updates;
+    const { config_json, description, ...otherUpdates } = updates;
     const updateData: ThreadUpdate = {
       ...otherUpdates,
       ...(config_json && { config_json: JSON.stringify(config_json) }),
+      ...(description !== undefined && { description }),
       updated_at: new Date().toISOString(),
     };
 
@@ -522,14 +537,23 @@ export const tradespaceService = {
               name: orb.name,
               chain: orb.chain,
               wallet_address: orb.wallet_address,
-              asset_pairs: orb.asset_pairs,
-              config_json: orb.config_json,
+              asset_pairs:
+                typeof orb.asset_pairs === "string"
+                  ? JSON.parse(orb.asset_pairs)
+                  : orb.asset_pairs,
+              config_json:
+                typeof orb.config_json === "string"
+                  ? JSON.parse(orb.config_json)
+                  : orb.config_json,
               threads: threads.map((thread) => ({
                 id: thread.id,
                 type: thread.type,
-                provider: thread.provider,
+                provider_id: thread.provider_id,
                 enabled: thread.enabled,
-                config_json: thread.config_json,
+                config_json:
+                  typeof thread.config_json === "string"
+                    ? JSON.parse(thread.config_json)
+                    : thread.config_json,
               })),
             };
           })

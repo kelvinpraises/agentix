@@ -1,5 +1,5 @@
 import { db } from "@/infrastructure/database/turso-connection";
-import { strategyQueue } from "@/infrastructure/queues/definitions";
+import { strategyQueue } from "@/infrastructure/queues/config";
 import {
   JournalEntryContent,
   JournalEntryType,
@@ -79,6 +79,27 @@ export const tradeActionService = {
         is_active: true,
       })
       .returning("id")
+      .executeTakeFirstOrThrow();
+  },
+
+  async updateTradeAction(
+    tradeActionId: number,
+    updates: {
+      orb_id?: number;
+      trading_pair?: string;
+      status?: "ANALYZING" | "REJECTED" | "EXECUTING" | "SUCCEEDED" | "FAILED";
+      is_active?: boolean;
+      summary?: string;
+    }
+  ) {
+    return await db
+      .updateTable("trade_actions")
+      .set({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .where("id", "=", tradeActionId)
+      .returningAll()
       .executeTakeFirstOrThrow();
   },
 
