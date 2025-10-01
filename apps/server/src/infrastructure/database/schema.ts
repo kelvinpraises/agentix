@@ -1,8 +1,8 @@
 import { ColumnType, Generated, JSONColumnType } from "kysely";
 
 import { JournalEntryContent, JournalEntryType } from "@/types/journal";
-import { PolicyDocument } from "@/types/policy";
 import { ChainType } from "@/types/orb";
+import { PolicyDocument } from "@/types/policy";
 
 export interface UsersTable {
   id: Generated<number>;
@@ -42,6 +42,7 @@ export interface OrbsTable {
   privy_wallet_id: string;
   asset_pairs: JSONColumnType<Record<string, number>>;
   config_json: JSONColumnType<Record<string, any> | null>;
+  context: string | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
@@ -49,10 +50,11 @@ export interface OrbsTable {
 export interface ThreadsTable {
   id: Generated<number>;
   orb_id: number;
-  type: "dex" | "bridge" | "lending" | "yield_farming" | "other";
-  provider: string;
+  type: "dex" | "bridge" | "lending" | "yield_farming" | "network_infra" | "other";
+  provider_id: string;
   enabled: boolean;
   config_json: JSONColumnType<Record<string, any>>;
+  description: string | null;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
@@ -105,13 +107,20 @@ export interface PortfolioSnapshotsTable {
   created_at: ColumnType<Date, string | undefined, never>;
 }
 
-export interface SimulatedWalletTable {
+export interface ThreadNetworkStorageTable {
+  id: Generated<number>;
+  sector_id: number;
+  chain: string;
+  provider_id: string;
+  storage_json: JSONColumnType<Record<string, any>>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
+export interface ThreadIsolatedStorageTable {
   id: Generated<number>;
   orb_id: number;
-  wallet_address: string;
-  balances: JSONColumnType<Record<string, string>>;
-  target_chain: ChainType;
-  created_at: ColumnType<Date, string | undefined, never>;
+  provider_id: string;
+  storage_json: JSONColumnType<Record<string, any>>;
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
@@ -125,5 +134,6 @@ export interface DB {
   trade_strategies: TradeStrategiesTable;
   journal_entries: JournalEntriesTable;
   portfolio_snapshots: PortfolioSnapshotsTable;
-  simulated_wallet: SimulatedWalletTable;
+  thread_network_storage: ThreadNetworkStorageTable;
+  thread_isolated_storage: ThreadIsolatedStorageTable;
 }
