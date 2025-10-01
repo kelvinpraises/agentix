@@ -3,6 +3,7 @@ import { SandboxedJob } from "bullmq";
 import { db } from "@/infrastructure/database/turso-connection";
 import { neuralAgent } from "@/interfaces/neural";
 import { portfolioService } from "@/services/trading/portfolio-service";
+import { SectorContext } from "@/types/sector";
 
 /**
  * This is the sandboxed processor for the sector trading queue.
@@ -72,7 +73,7 @@ module.exports = async (job: SandboxedJob) => {
     const walletBalances = await portfolioService.getWalletBalances(userId);
     const openPositions = await portfolioService.getOpenPositions(userId);
 
-    const sectorContext = {
+    const sectorContext: SectorContext = {
       sectorId: sector.id,
       sectorName: sector.name,
       sectorType: sector.type,
@@ -84,7 +85,7 @@ module.exports = async (job: SandboxedJob) => {
         assetPairs: orb.asset_pairs,
         threads: orb.threads.map((t) => ({
           type: t.type,
-          provider: t.provider,
+          providerId: t.provider_id,
           config: t.config_json,
         })),
       })),

@@ -1,17 +1,17 @@
 import cron from "node-cron";
 
 import { db } from "@/infrastructure/database/turso-connection";
-import { userTradingQueue } from "@/infrastructure/queues/definitions";
+import { userTradingQueue } from "@/infrastructure/queues/config";
 
 const tradeCycler = {
   async start() {
-    console.log("🤖 [cron-service] Starting master scheduler...");
+    console.log("[trade-cycler-cron] Starting trade cycler...");
 
     await this.cleanAllQueues();
 
     // This job ensures all sectors have their trading cycle scheduled.
     cron.schedule("*/5 * * * *", async () => {
-      console.log("🤖 [cron-service] Running sector scheduling job...");
+      console.log("[trade-cycler-cron] Running sector scheduling job...");
       await this.scheduleSectorTradingJobs();
     });
 
@@ -20,7 +20,7 @@ const tradeCycler = {
   },
 
   async cleanAllQueues() {
-    console.log("🧹 [cron-service] Cleaning all queues...");
+    console.log("🧹 [trade-cycler-cron] Cleaning all queues...");
     await Promise.all([
       userTradingQueue.clean(0, Infinity, "completed"),
       userTradingQueue.clean(0, Infinity, "wait"),
@@ -30,7 +30,7 @@ const tradeCycler = {
       userTradingQueue.clean(0, Infinity, "delayed"),
       userTradingQueue.clean(0, Infinity, "failed"),
     ]);
-    console.log("✅ [cron-service] Queues cleaned.");
+    console.log("[trade-cycler-cron] Queues cleaned.");
   },
 
   async scheduleSectorTradingJobs() {
@@ -69,7 +69,7 @@ const tradeCycler = {
         if (!activeSectorIds.has(sectorId)) {
           if (job.id) {
             await userTradingQueue.removeJobScheduler(job.id);
-            console.log(`🧹 [cron-service] Removed stale job for sector ${sectorId}.`);
+            console.log(`[trade-cycler-cron] Removed stale job for sector ${sectorId}.`);
           }
         }
       }
@@ -85,7 +85,7 @@ const tradeCycler = {
         const { frequency_minutes } = sector.policy_document.trading_preferences;
         if (!frequency_minutes) {
           console.warn(
-            `⚠️ [cron-service] Sector ${sector.sector_id} (${sector.sector_name}) policy has no frequency_minutes. Skipping.`
+            `[trade-cycler-cron] Sector ${sector.sector_id} (${sector.sector_name}) policy has no frequency_minutes. Skipping.`
           );
           continue;
         }
@@ -111,13 +111,13 @@ const tradeCycler = {
 
       if (upsertedCount > 0) {
         console.log(
-          `✅ [cron-service] Upserted ${upsertedCount} sector trading schedulers.`
+          `[trade-cycler-cron] Upserted ${upsertedCount} sector trading schedulers.`
         );
       } else {
-        console.log("✅ [cron-service] All sector trading jobs are up to date.");
+        console.log("[trade-cycler-cron] All sector trading jobs are up to date.");
       }
     } catch (error) {
-      console.error("❌ [cron-service] Error scheduling sector trading jobs:", error);
+      console.error("[trade-cycler-cron] Error scheduling sector trading jobs:", error);
     }
   },
 };
