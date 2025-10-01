@@ -3,12 +3,6 @@ import { sql } from "kysely";
 
 import { db } from "@/infrastructure/database/turso-connection";
 import {
-  extractOrbIdFromAddress,
-  generatePaperWalletAddress,
-  isBurnerAddress,
-  isPaperWalletAddress,
-} from "@/services/wallets/chains/paper/paper-utils";
-import {
   TransactionSigningError,
   WalletGenerationError,
 } from "@/services/wallets/shared/errors";
@@ -17,12 +11,8 @@ import { ChainType } from "@/types/orb";
 import {
   ISignatureResult,
   IWalletGenerationResult,
-  PaperDepositRequest,
   PaperTransferRequest,
 } from "@/types/wallet";
-
-// Cache for paper wallets (similar to ICP wallet cache pattern)
-const paperWalletCache = new Map<string, { address: string; targetChain: ChainType }>();
 
 export async function generatePaperWallet(
   orbId: string,
@@ -187,42 +177,6 @@ export async function executePaperTransfer(
   }
 }
 
-export async function depositPaperAssets(
-  orbId: string,
-  request: PaperDepositRequest
-): Promise<void> {
-  validateOrbId(orbId);
-
-  try {
-    const { asset, amount } = request;
-
-    // Validate amount is positive
-    if (BigInt(amount) <= 0) {
-      throw new Error("Deposit amount must be positive");
-    }
-
-    // Update balance using JSON functions
-    await db
-      .updateTable("simulated_wallet")
-      .set({
-        balances: sql`json_set(
-          COALESCE(balances, '{}'), 
-          ${`$.${asset}`}, 
-          COALESCE(json_extract(balances, ${`$.${asset}`}), '0') + ${amount}
-        )`,
-        updated_at: new Date().toISOString(),
-      })
-      .where("orb_id", "=", parseInt(orbId))
-      .execute();
-  } catch (error) {
-    throw new TransactionSigningError(
-      `Failed to deposit ${request.amount} ${request.asset} to paper wallet: ${error}`,
-      "paper",
-      orbId
-    );
-  }
-}
-
 export async function queryPaperBalance(orbId: string, asset: string): Promise<string> {
   validateOrbId(orbId);
 
@@ -237,26 +191,6 @@ export async function queryPaperBalance(orbId: string, asset: string): Promise<s
   } catch (error) {
     throw new TransactionSigningError(
       `Failed to get ${asset} balance for paper wallet: ${error}`,
-      "paper",
-      orbId
-    );
-  }
-}
-
-export async function getAllPaperBalances(orbId: string): Promise<Record<string, string>> {
-  validateOrbId(orbId);
-
-  try {
-    const result = await db
-      .selectFrom("simulated_wallet")
-      .select(["balances"])
-      .where("orb_id", "=", parseInt(orbId))
-      .executeTakeFirst();
-
-    return (result?.balances as Record<string, string>) || {};
-  } catch (error) {
-    throw new TransactionSigningError(
-      `Failed to get all balances for paper wallet: ${error}`,
       "paper",
       orbId
     );

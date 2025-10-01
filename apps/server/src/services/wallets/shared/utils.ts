@@ -1,15 +1,7 @@
 import { ChainType } from "@/types/orb";
-import {
-  IEVMTransferRequest,
-  IICPTransferRequest,
-  IOrbData,
-  PaperTransferRequest,
-} from "@/types/wallet";
+import { IEVMTransferRequest, IOrbData, PaperTransferRequest } from "@/types/wallet";
 
-export type ChainTransaction =
-  | IICPTransferRequest
-  | IEVMTransferRequest
-  | PaperTransferRequest;
+export type ChainTransaction = IEVMTransferRequest | PaperTransferRequest;
 
 // Middleware function to transform orbData for paper trading
 export function transformOrbDataForPaperTrading(orbData: IOrbData): {
@@ -26,13 +18,6 @@ export function transformOrbDataForPaperTrading(orbData: IOrbData): {
     return { transformedOrbData, targetChain };
   }
   return { transformedOrbData: orbData, targetChain };
-}
-
-// Type guards
-export function isICPTransaction(
-  transaction: ChainTransaction
-): transaction is IICPTransferRequest {
-  return "canisterId" in transaction && "fromOrbId" in transaction;
 }
 
 export function isEVMTransaction(

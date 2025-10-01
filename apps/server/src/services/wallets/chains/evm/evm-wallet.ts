@@ -50,6 +50,7 @@ const CHAIN_CONFIGS: Record<ChainType, Chain | null> = {
   ethereum: mainnet,
   sei: sei,
   hyperliquid: hyperliquidEvmMainnet,
+  paper: null, // Not an EVM chain
   solana: null, // Not an EVM chain
   icp: null, // Not an EVM chain
 };
