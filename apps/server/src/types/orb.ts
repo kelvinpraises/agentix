@@ -12,8 +12,6 @@ export interface OrbConfig {
   max_position_size?: number;
 }
 
-export type ThreadType = "dex" | "bridge" | "lending" | "yield_farming";
-
 export interface ThreadConfig {
   // DEX specific
   slippage_tolerance?: number;

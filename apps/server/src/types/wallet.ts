@@ -18,45 +18,6 @@ export const ZSignatureResult = z.object({
   encoding: z.optional(z.string()),
 });
 
-// Principal string for ICP, e.g. aaaaa-aa
-export const ZPrincipalStr = z.string().regex(/^[0-9a-zA-Z]{1,5}(\-[0-9a-zA-Z]{1,5})*$/);
-
-// ICRC-1 subaccount
-export const ZICRC1Subaccount = z.instanceof(Uint8Array);
-
-// ICRC-1 account structure
-export type IICRC1Account = z.infer<typeof ZICRC1Account>;
-export const ZICRC1Account = z.object({
-  owner: ZPrincipalStr,
-  subaccount: z.optional(ZICRC1Subaccount),
-});
-
-// ICRC-1 transfer arguments (Candid format)
-export type IICRC1TransferArgs = z.infer<typeof ZICRC1TransferArgs>;
-export const ZICRC1TransferArgs = z.object({
-  from_subaccount: z.union([z.array(z.never()), z.tuple([ZICRC1Subaccount])]), // [] | [Uint8Array]
-  to: z.object({
-    owner: ZPrincipalStr,
-    subaccount: z.union([z.array(z.never()), z.tuple([ZICRC1Subaccount])]), // [] | [Uint8Array]
-  }),
-  amount: z.bigint().nonnegative(),
-  fee: z.union([z.array(z.never()), z.tuple([z.bigint().nonnegative()])]), // [] | [bigint]
-  memo: z.union([z.array(z.never()), z.tuple([ZICRC1Subaccount])]), // [] | [Uint8Array]
-  created_at_time: z.union([z.array(z.never()), z.tuple([z.bigint().nonnegative()])]), // [] | [bigint]
-});
-
-// ICP transfer request for our service
-export type IICPTransferRequest = z.infer<typeof ZICPTransferRequest>;
-export const ZICPTransferRequest = z.object({
-  fromOrbId: z.string().min(1),
-  toAddress: ZPrincipalStr,
-  canisterId: ZPrincipalStr,
-  amount: z.bigint().nonnegative(),
-  fee: z.optional(z.bigint().nonnegative()),
-  memo: z.optional(ZICRC1Subaccount),
-  expiryMinutes: z.optional(z.number().positive().default(5)),
-});
-
 // Base EVM transaction properties
 const ZBaseEVMTransaction = z.object({
   gasLimit: z.optional(z.string()),
@@ -115,24 +76,6 @@ export interface WalletError extends Error {
 }
 
 // Paper wallet types
-export type PaperWalletLedger = Record<string, string>;
-
-export interface SimulatedWallet {
-  id: number;
-  orb_id: number;
-  wallet_address: string;
-  balances: PaperWalletLedger;
-  target_chain: ChainType;
-  created_at: string;
-  updated_at: string;
-}
-
-export type PaperDepositRequest = z.infer<typeof ZPaperDepositRequest>;
-export const ZPaperDepositRequest = z.object({
-  asset: z.string().min(1),
-  amount: z.string().min(1),
-});
-
 export type PaperTransferRequest = z.infer<typeof ZPaperTransferRequest>;
 export const ZPaperTransferRequest = z.object({
   to: z.string().min(1),

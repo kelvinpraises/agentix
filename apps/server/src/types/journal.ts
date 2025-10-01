@@ -7,6 +7,7 @@ export type JournalEntryType =
   | "TECHNICAL_DATA_RETRIEVED" // getOHLC, getMarketChart tool output
   | "COIN_DATA_RETRIEVED" // getCoinList tool output
   | "NEWS_DATA_RETRIEVED" // globalSearch tool output
+  | "ORB_CONTEXT_RETRIEVED" // getOrbContext tool output
   // Research Phase - AI Analysis
   | "MARKET_DATA_ANALYSIS" // AI analysis of market data
   | "SENTIMENT_ANALYSIS" // AI analysis of sentiment data
@@ -14,6 +15,7 @@ export type JournalEntryType =
   | "COIN_ANALYSIS" // AI analysis of coin data
   | "NEWS_ANALYSIS" // AI analysis of news data
   // Building Phase - Strategy Building
+  | "ORB_LOCKED" // lockOrbSelection tool output
   | "RSI_STRATEGY_ADDED" // addRsiStrategy tool output
   | "SMA_STRATEGY_ADDED" // addSmaCrossStrategy tool output
   | "POSITION_MONITOR_ADDED" // addPositionMonitor tool output
@@ -43,11 +45,13 @@ export type JournalContentMap = {
   TECHNICAL_DATA_RETRIEVED: TechnicalDataRetrievedContent;
   COIN_DATA_RETRIEVED: CoinDataRetrievedContent;
   NEWS_DATA_RETRIEVED: NewsDataRetrievedContent;
+  ORB_CONTEXT_RETRIEVED: OrbContextRetrievedContent;
   MARKET_DATA_ANALYSIS: MarketDataAnalysisContent;
   SENTIMENT_ANALYSIS: SentimentAnalysisContent;
   TECHNICAL_ANALYSIS: TechnicalAnalysisContent;
   COIN_ANALYSIS: CoinAnalysisContent;
   NEWS_ANALYSIS: NewsAnalysisContent;
+  ORB_LOCKED: OrbLockedContent;
   RSI_STRATEGY_ADDED: RsiStrategyAddedContent;
   SMA_STRATEGY_ADDED: SmaStrategyAddedContent;
   POSITION_MONITOR_ADDED: PositionMonitorAddedContent;
@@ -74,6 +78,7 @@ export type JournalEntryContent =
   | TechnicalDataRetrievedContent
   | CoinDataRetrievedContent
   | NewsDataRetrievedContent
+  | OrbContextRetrievedContent
   // Research Phase - AI Analysis
   | MarketDataAnalysisContent
   | SentimentAnalysisContent
@@ -81,6 +86,7 @@ export type JournalEntryContent =
   | CoinAnalysisContent
   | NewsAnalysisContent
   // Building Phase - Strategy Building
+  | OrbLockedContent
   | RsiStrategyAddedContent
   | SmaStrategyAddedContent
   | PositionMonitorAddedContent
@@ -128,6 +134,13 @@ export interface NewsDataRetrievedContent {
   rawData: Record<string, any>;
 }
 
+export interface OrbContextRetrievedContent {
+  orbId: number;
+  orbName: string;
+  threadsCount: number;
+  context: string | null;
+}
+
 // ============================================================================
 // RESEARCH PHASE - AI ANALYSIS CONTENT TYPES
 // ============================================================================
@@ -155,6 +168,12 @@ export interface NewsAnalysisContent {
 // ============================================================================
 // BUILDING PHASE - STRATEGY CONTENT TYPES
 // ============================================================================
+
+export interface OrbLockedContent {
+  orbId: number;
+  orbName: string;
+  reasoning: string;
+}
 
 export interface RsiStrategyAddedContent {
   rsi_upper: number;
