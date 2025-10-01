@@ -11,13 +11,15 @@ interface BindingEnv {
 }
 
 function makeBinding(env: BindingEnv): WalletExtension {
+  const rpcUrl = env.apiBaseUrl || 'http://localhost:4848/rpc';
+
   return new WalletExtension(
     {
       orbId: parseInt(env.orbId, 10),
       sectorId: parseInt(env.sectorId, 10),
       chain: env.chain,
     },
-    env.apiBaseUrl
+    rpcUrl
   );
 }
 

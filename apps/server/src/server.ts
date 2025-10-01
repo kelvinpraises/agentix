@@ -13,7 +13,7 @@ import profileRoutes from "@/interfaces/api/routes/profile";
 import sectorRoutes from "@/interfaces/api/routes/sector";
 import threadRoutes from "@/interfaces/api/routes/thread";
 import tradeRoutes from "@/interfaces/api/routes/trade";
-import internalRoutes from "@/interfaces/api/routes/internal";
+import rpcRoutes from "@/interfaces/rpc";
 
 dotenv.config();
 
@@ -31,7 +31,7 @@ app.use("/api/trades", tradeRoutes);
 app.use("/api/policy", policyRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/portfolio", portfolioRoutes);
-app.use("/internal", internalRoutes);
+app.use("/internal/rpc", rpcRoutes);
 
 app.use(errorHandler);
 

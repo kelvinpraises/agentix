@@ -1,5 +1,7 @@
 // Internal implementation of wallet extension
-// Handles scoped wallet operations via JSON-RPC to Agentix API
+// Uses Cap'n Web RPC to communicate with Agentix wallet service
+
+// import { newHttpBatchRpcSession } from 'capnweb';
 
 interface WalletConfig {
   orbId: number;
@@ -7,73 +9,22 @@ interface WalletConfig {
   chain: string;
 }
 
-interface JsonRpcRequest {
-  jsonrpc: "2.0";
-  method: string;
-  params?: any[];
-  id: number | string;
-}
-
-interface JsonRpcResponse {
-  jsonrpc: "2.0";
-  result?: any;
-  error?: {
-    code: number;
-    message: string;
-    data?: any;
-  };
-  id: number | string;
-}
-
 export class WalletExtension {
   #config: WalletConfig;
   #rpcUrl: string;
-  #requestId: number = 0;
 
-  constructor(config: WalletConfig, apiBaseUrl = "http://localhost:3000") {
+  constructor(config: WalletConfig, rpcUrl = 'http://localhost:4848/rpc') {
     this.#config = config;
-    this.#rpcUrl = `${apiBaseUrl}/internal/wallet/rpc`;
-  }
-
-  /**
-   * Make a JSON-RPC call to the wallet service
-   */
-  async #rpc(method: string, params?: any[]): Promise<any> {
-    this.#requestId++;
-
-    const request: JsonRpcRequest = {
-      jsonrpc: "2.0",
-      method,
-      params: [this.#config, ...(params || [])],
-      id: this.#requestId,
-    };
-
-    const res = await fetch(this.#rpcUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(request),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Wallet RPC failed: ${res.status} ${await res.text()}`);
-    }
-
-    const response: JsonRpcResponse = await res.json();
-
-    if (response.error) {
-      throw new Error(`Wallet RPC error: ${response.error.message}`);
-    }
-
-    return response.result;
+    this.#rpcUrl = rpcUrl;
   }
 
   /**
    * Get wallet address for this orb
    */
   async getAddress(): Promise<string> {
-    return this.#rpc("wallet_getAddress");
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    const result = await batch.wallet.getAddress(this.#config);
+    return result.address;
   }
 
   /**
@@ -82,7 +33,8 @@ export class WalletExtension {
    * For Solana, returns lamports (number)
    */
   async getBalance(): Promise<string | number> {
-    return this.#rpc("wallet_getBalance");
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    return await batch.wallet.getBalance(this.#config);
   }
 
   /**
@@ -90,7 +42,11 @@ export class WalletExtension {
    * @param tokenAddress - Token contract address or mint address
    */
   async getTokenBalance(tokenAddress: string): Promise<string | number> {
-    return this.#rpc("wallet_getTokenBalance", [tokenAddress]);
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    return await batch.wallet.getBalance({
+      ...this.#config,
+      tokenAddress,
+    });
   }
 
   /**
@@ -98,7 +54,11 @@ export class WalletExtension {
    * @param transaction - Chain-specific transaction object
    */
   async sendTransaction(transaction: any): Promise<string> {
-    return this.#rpc("wallet_sendTransaction", [transaction]);
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    return await batch.wallet.sendTransaction({
+      ...this.#config,
+      transaction,
+    });
   }
 
   /**
@@ -106,36 +66,22 @@ export class WalletExtension {
    * @param transaction - Chain-specific transaction object
    */
   async signTransaction(transaction: any): Promise<string> {
-    return this.#rpc("wallet_signTransaction", [transaction]);
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    return await batch.wallet.signTransaction({
+      ...this.#config,
+      transaction,
+    });
   }
 
   /**
-   * Get transaction status
-   * @param txHash - Transaction hash
+   * Sign message
+   * @param message - Message to sign
    */
-  async getTransaction(txHash: string): Promise<any> {
-    return this.#rpc("wallet_getTransaction", [txHash]);
-  }
-
-  /**
-   * Estimate gas for transaction (EVM only)
-   * @param transaction - Transaction object
-   */
-  async estimateGas(transaction: any): Promise<string> {
-    return this.#rpc("wallet_estimateGas", [transaction]);
-  }
-
-  /**
-   * Get current gas price (EVM only)
-   */
-  async getGasPrice(): Promise<string> {
-    return this.#rpc("wallet_getGasPrice");
-  }
-
-  /**
-   * Get chain-specific info (block number, slot, etc.)
-   */
-  async getChainInfo(): Promise<any> {
-    return this.#rpc("wallet_getChainInfo");
+  async signMessage(message: string): Promise<string> {
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    return await batch.wallet.signMessage({
+      ...this.#config,
+      message,
+    });
   }
 }

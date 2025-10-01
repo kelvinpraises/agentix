@@ -1,28 +1,30 @@
 // Internal implementation of storage extension
-// Handles scoped storage operations with HTTP calls to Agentix API
+// Uses Cap'n Web RPC to communicate with Agentix storage service
+
+// import { newHttpBatchRpcSession } from "capnweb";
 
 interface StorageConfig {
   orbId?: number;
   sectorId?: number;
   chain?: string;
   providerId: string;
-  scope: 'isolated' | 'network';
+  scope: "isolated" | "network";
 }
 
 export class StorageExtension {
   #config: StorageConfig;
-  #apiBaseUrl: string;
+  #rpcUrl: string;
 
-  constructor(config: StorageConfig, apiBaseUrl = 'http://localhost:3000') {
+  constructor(config: StorageConfig, rpcUrl = "http://localhost:4848/rpc") {
     this.#config = config;
-    this.#apiBaseUrl = apiBaseUrl;
+    this.#rpcUrl = rpcUrl;
 
     // Validate scoping requirements
-    if (config.scope === 'isolated' && !config.orbId) {
-      throw new Error('Isolated storage requires orbId');
+    if (config.scope === "isolated" && !config.orbId) {
+      throw new Error("Isolated storage requires orbId");
     }
-    if (config.scope === 'network' && (!config.sectorId || !config.chain)) {
-      throw new Error('Network storage requires sectorId and chain');
+    if (config.scope === "network" && (!config.sectorId || !config.chain)) {
+      throw new Error("Network storage requires sectorId and chain");
     }
   }
 
@@ -31,26 +33,20 @@ export class StorageExtension {
    * Returns null if no storage exists yet
    */
   async get(): Promise<any | null> {
-    const url = `${this.#apiBaseUrl}/internal/storage/${this.#config.scope}`;
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
 
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Storage-Config': JSON.stringify(this.#config),
-      },
-    });
-
-    if (res.status === 404) {
-      return null;
+    if (this.#config.scope === "isolated") {
+      return await batch.storage.getIsolatedStorage({
+        orbId: this.#config.orbId!,
+        providerId: this.#config.providerId,
+      });
+    } else {
+      return await batch.storage.getNetworkStorage({
+        sectorId: this.#config.sectorId!,
+        chain: this.#config.chain!,
+        providerId: this.#config.providerId,
+      });
     }
-
-    if (!res.ok) {
-      throw new Error(`Storage get failed: ${res.status} ${await res.text()}`);
-    }
-
-    const data = await res.json();
-    return data.storage;
   }
 
   /**
@@ -58,21 +54,21 @@ export class StorageExtension {
    * Replaces any existing data
    */
   async set(data: any): Promise<void> {
-    const url = `${this.#apiBaseUrl}/internal/storage/${this.#config.scope}`;
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
 
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        config: this.#config,
+    if (this.#config.scope === "isolated") {
+      await batch.storage.setIsolatedStorage({
+        orbId: this.#config.orbId!,
+        providerId: this.#config.providerId,
         data,
-      }),
-    });
-
-    if (!res.ok) {
-      throw new Error(`Storage set failed: ${res.status} ${await res.text()}`);
+      });
+    } else {
+      await batch.storage.setNetworkStorage({
+        sectorId: this.#config.sectorId!,
+        chain: this.#config.chain!,
+        providerId: this.#config.providerId,
+        data,
+      });
     }
   }
 
@@ -80,18 +76,19 @@ export class StorageExtension {
    * Delete storage for this scoped entity
    */
   async delete(): Promise<void> {
-    const url = `${this.#apiBaseUrl}/internal/storage/${this.#config.scope}`;
+    const batch = newHttpBatchRpcSession(this.#rpcUrl);
 
-    const res = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Storage-Config': JSON.stringify(this.#config),
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Storage delete failed: ${res.status} ${await res.text()}`);
+    if (this.#config.scope === "isolated") {
+      await batch.storage.deleteIsolatedStorage({
+        orbId: this.#config.orbId!,
+        providerId: this.#config.providerId,
+      });
+    } else {
+      await batch.storage.deleteNetworkStorage({
+        sectorId: this.#config.sectorId!,
+        chain: this.#config.chain!,
+        providerId: this.#config.providerId,
+      });
     }
   }
 }

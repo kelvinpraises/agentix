@@ -23,6 +23,7 @@
     "@mastra/memory": "^0.15.3",
     "@noble/hashes": "^1.8.0",
     "@privy-io/server-auth": "^1.31.1",
+    "@whatwg-node/server": "^0.10.12",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.2.0",
     "bullmq": "^5.10.2",

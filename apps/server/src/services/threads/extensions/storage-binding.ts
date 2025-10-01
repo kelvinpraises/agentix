@@ -1,18 +1,20 @@
 // Binding module for storage extension
 // This receives innerBindings from workerd and constructs the StorageExtension
 
-import { StorageExtension } from 'agentix-internal:storage-impl';
+import { StorageExtension } from "agentix-internal:storage-impl";
 
 interface BindingEnv {
   orbId?: string;
   sectorId?: string;
   chain?: string;
   providerId: string;
-  storageScope: 'isolated' | 'network';
+  storageScope: "isolated" | "network";
   apiBaseUrl?: string;
 }
 
 function makeBinding(env: BindingEnv): StorageExtension {
+  const rpcUrl = env.apiBaseUrl || "http://localhost:4848/rpc";
+
   return new StorageExtension(
     {
       orbId: env.orbId ? parseInt(env.orbId, 10) : undefined,
@@ -21,7 +23,7 @@ function makeBinding(env: BindingEnv): StorageExtension {
       providerId: env.providerId,
       scope: env.storageScope,
     },
-    env.apiBaseUrl
+    rpcUrl
   );
 }
 
