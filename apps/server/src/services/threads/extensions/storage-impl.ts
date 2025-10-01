@@ -1,7 +1,7 @@
 // Internal implementation of storage extension
 // Uses Cap'n Web RPC to communicate with Agentix storage service
 
-// import { newHttpBatchRpcSession } from "capnweb";
+import { RpcTarget, newHttpBatchRpcSession } from "capnweb";
 
 interface StorageConfig {
   orbId?: number;
@@ -9,6 +9,17 @@ interface StorageConfig {
   chain?: string;
   providerId: string;
   scope: "isolated" | "network";
+}
+
+interface StorageRpcApi extends RpcTarget {
+  storage: {
+    getIsolatedStorage(params: { orbId: number; providerId: string }): Promise<any | null>;
+    setIsolatedStorage(params: { orbId: number; providerId: string; data: any }): Promise<void>;
+    deleteIsolatedStorage(params: { orbId: number; providerId: string }): Promise<void>;
+    getNetworkStorage(params: { sectorId: number; chain: string; providerId: string }): Promise<any | null>;
+    setNetworkStorage(params: { sectorId: number; chain: string; providerId: string; data: any }): Promise<void>;
+    deleteNetworkStorage(params: { sectorId: number; chain: string; providerId: string }): Promise<void>;
+  };
 }
 
 export class StorageExtension {
@@ -33,7 +44,7 @@ export class StorageExtension {
    * Returns null if no storage exists yet
    */
   async get(): Promise<any | null> {
-    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    const batch = newHttpBatchRpcSession<StorageRpcApi>(this.#rpcUrl);
 
     if (this.#config.scope === "isolated") {
       return await batch.storage.getIsolatedStorage({
@@ -54,7 +65,7 @@ export class StorageExtension {
    * Replaces any existing data
    */
   async set(data: any): Promise<void> {
-    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    const batch = newHttpBatchRpcSession<StorageRpcApi>(this.#rpcUrl);
 
     if (this.#config.scope === "isolated") {
       await batch.storage.setIsolatedStorage({
@@ -76,7 +87,7 @@ export class StorageExtension {
    * Delete storage for this scoped entity
    */
   async delete(): Promise<void> {
-    const batch = newHttpBatchRpcSession(this.#rpcUrl);
+    const batch = newHttpBatchRpcSession<StorageRpcApi>(this.#rpcUrl);
 
     if (this.#config.scope === "isolated") {
       await batch.storage.deleteIsolatedStorage({
