@@ -55,9 +55,6 @@ interface PaperWalletRpcApi extends RpcTarget {
   getBalance(params: { orbId: number; asset: string }): Promise<{ balance: string }>;
 }
 
-// Cache for network_infra thread ports
-const threadPortCache = new Map<string, number>();
-
 async function getNetworkInfraThread(orbId: string): Promise<NetworkInfraThread> {
   validateOrbId(orbId);
 
@@ -88,15 +85,7 @@ async function getNetworkInfraThread(orbId: string): Promise<NetworkInfraThread>
 }
 
 async function getNetworkInfraRpcUrl(orbId: string): Promise<string> {
-  const cacheKey = `orb-${orbId}`;
-
-  // Check cache first
-  if (threadPortCache.has(cacheKey)) {
-    const port = threadPortCache.get(cacheKey)!;
-    return `http://localhost:${port}/rpc`;
-  }
-
-  // Get thread config and spawn/reuse process
+  // Get thread config and spawn/reuse process (threadService handles caching)
   const thread = await getNetworkInfraThread(orbId);
   const { port } = await threadService.getOrServeThread(
     thread.orbId,
@@ -105,9 +94,6 @@ async function getNetworkInfraRpcUrl(orbId: string): Promise<string> {
     thread.providerId,
     thread.config
   );
-
-  // Cache for future calls
-  threadPortCache.set(cacheKey, port);
 
   return `http://localhost:${port}/rpc`;
 }
