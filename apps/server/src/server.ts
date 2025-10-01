@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 
+import threadCleanup from "@/infrastructure/cron/system/thread-cleanup";
 import tradeCycler from "@/infrastructure/cron/trading/trade-cycler";
 import { errorHandler } from "@/interfaces/api/middleware/errorHandler";
 import authRoutes from "@/interfaces/api/routes/auth";
@@ -12,6 +13,7 @@ import profileRoutes from "@/interfaces/api/routes/profile";
 import sectorRoutes from "@/interfaces/api/routes/sector";
 import threadRoutes from "@/interfaces/api/routes/thread";
 import tradeRoutes from "@/interfaces/api/routes/trade";
+import internalRoutes from "@/interfaces/api/routes/internal";
 
 dotenv.config();
 
@@ -29,6 +31,7 @@ app.use("/api/trades", tradeRoutes);
 app.use("/api/policy", policyRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/portfolio", portfolioRoutes);
+app.use("/internal", internalRoutes);
 
 app.use(errorHandler);
 
@@ -45,4 +48,5 @@ app.listen(BACKEND_PORT, () => {
 
   // Start crons
   tradeCycler.start();
+  threadCleanup.start();
 });
