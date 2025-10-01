@@ -10,12 +10,14 @@ interface CreateOrbRequestBody {
   chain: ChainType;
   asset_pairs: Record<string, number>;
   config_json?: Record<string, any>;
+  context?: string;
 }
 
 interface UpdateOrbRequestBody {
   name?: string;
   asset_pairs?: Record<string, number>;
   config_json?: Record<string, any>;
+  context?: string;
 }
 
 const orbController = {

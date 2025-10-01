@@ -9,12 +9,14 @@ interface CreateThreadRequestBody {
   provider: string;
   enabled?: boolean;
   config_json: Record<string, any>;
+  description?: string;
 }
 
 interface UpdateThreadRequestBody {
   provider?: string;
   enabled?: boolean;
   config_json?: Record<string, any>;
+  description?: string;
 }
 
 const threadController = {
@@ -67,6 +69,7 @@ const threadController = {
         provider: threadData.provider,
         enabled: threadData.enabled,
         config_json: threadData.config_json,
+        description: threadData.description,
       });
 
       res.status(201).json({ thread: result });
