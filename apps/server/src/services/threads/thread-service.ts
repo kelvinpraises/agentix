@@ -12,7 +12,7 @@ import { createConfigHash } from "@/utils/threads";
 const activeProcesses = new Map<string, ManagedProcess>();
 
 export const threadService = {
-  async getOrServeThreadMCP(
+  async getOrServeThread(
     orbId: number,
     sectorId: number,
     chain: string,
@@ -85,11 +85,11 @@ export const threadService = {
     }
   },
 
-  async cleanupUnusedThreadMCPs() {
+  async cleanupUnusedThreads() {
     const now = Date.now();
     const maxLifetime = 20 * 60 * 1000; // 20 minutes
 
-    console.log("Running cleanup for unused thread MCPs...");
+    console.log("Running cleanup for unused threads...");
     for (const [hash, managedProcess] of activeProcesses.entries()) {
       if (now - managedProcess.lastUsed > maxLifetime) {
         console.log(
