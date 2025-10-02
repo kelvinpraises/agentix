@@ -223,7 +223,9 @@ export function createTransferRequest(
   } else {
     // Never assume decimals - must be explicitly provided
     if (!transfer.decimals && transfer.decimals !== 0) {
-      throw new Error('Token decimals must be specified for ERC-20 transfers - never assume 18');
+      throw new Error(
+        "Token decimals must be specified for ERC-20 transfers - never assume 18"
+      );
     }
     const amountInUnits = parseUnits(transfer.amount, transfer.decimals);
     const data = encodeFunctionData({

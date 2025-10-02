@@ -30,7 +30,6 @@ interface NetworkInfraThread {
   config: Record<string, any>;
 }
 
-// Paper Wallet RPC API interface
 interface PaperWalletRpcApi extends RpcTarget {
   generateWallet(params: {
     orbId: number;
@@ -85,7 +84,6 @@ async function getNetworkInfraThread(orbId: string): Promise<NetworkInfraThread>
 }
 
 async function getNetworkInfraRpcUrl(orbId: string): Promise<string> {
-  // Get thread config and spawn/reuse process (threadService handles caching)
   const thread = await getNetworkInfraThread(orbId);
   const { port } = await threadService.getOrServeThread(
     thread.orbId,
