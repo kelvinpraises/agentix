@@ -1,5 +1,6 @@
 import cron from "node-cron";
-import { threadService } from "@/services/threads/thread-service";
+
+import { threadService } from "@/services/system/threads/thread-service";
 
 const threadCleanup = {
   start() {

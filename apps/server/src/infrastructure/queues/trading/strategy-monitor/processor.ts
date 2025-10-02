@@ -1,7 +1,7 @@
 import { SandboxedJob } from "bullmq";
 
 import { strategyQueue } from "@/infrastructure/queues/config";
-import { sendTradeProposal } from "@/services/shared/notification-service";
+import { sendTradeProposal } from "@/services/system/notification-service";
 import { marketDataService } from "@/services/trading/market-data-service";
 import * as positionMonitor from "@/services/trading/strategies/position-monitor";
 import * as rsiStrategy from "@/services/trading/strategies/rsi";

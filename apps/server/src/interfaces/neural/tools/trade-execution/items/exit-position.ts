@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyQueue } from "@/infrastructure/queues/definitions";
+import { strategyQueue } from "@/infrastructure/queues/config";
 import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 

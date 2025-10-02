@@ -13,9 +13,9 @@ import { mainnet, sei } from "viem/chains";
 import {
   TransactionSigningError,
   WalletGenerationError,
-} from "@/services/wallets/shared/errors";
-import { validateOrbId } from "@/services/wallets/shared/providers/base-provider";
-import { getAuthConfig } from "@/services/wallets/shared/providers/privy-provider";
+} from "@/services/system/wallet/shared/errors";
+import { validateOrbId } from "@/services/system/wallet/shared/providers/base-provider";
+import { getAuthConfig } from "@/services/system/wallet/shared/providers/privy-provider";
 import { ChainType } from "@/types/orb";
 import {
   IEVMTransactionRequest,

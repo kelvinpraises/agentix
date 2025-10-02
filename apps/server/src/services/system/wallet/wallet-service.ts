@@ -2,10 +2,10 @@ import {
   createTransferRequest,
   generateEVMWallet,
   signEVMTransaction,
-} from "@/services/wallets/chains/evm/evm-wallet";
-import { validateOrbId } from "@/services/wallets/shared/providers/base-provider";
-import { createPrivyClient } from "@/services/wallets/shared/providers/privy-provider";
-import { ChainTransaction, isEVMTransaction } from "@/services/wallets/shared/utils";
+} from "@/services/system/wallet/chains/evm/evm-wallet";
+import { validateOrbId } from "@/services/system/wallet/shared/providers/base-provider";
+import { createPrivyClient } from "@/services/system/wallet/shared/providers/privy-provider";
+import { ChainTransaction, isEVMTransaction } from "@/services/system/wallet/shared/utils";
 import { IOrbData, ISignatureResult, IWalletGenerationResult } from "@/types/wallet";
 
 const client = createPrivyClient();

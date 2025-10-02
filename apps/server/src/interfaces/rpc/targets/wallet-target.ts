@@ -1,9 +1,9 @@
 import { RpcTarget } from "capnweb";
 
 import { db } from "@/infrastructure/database/turso-connection";
-import { walletService } from "@/services/wallets/wallet-service";
 import { ChainType } from "@/types/orb";
 import { IOrbData } from "@/types/wallet";
+import { walletService } from "@/services/system/wallet/wallet-service";
 
 /**
  * Wallet RPC Target

@@ -3,7 +3,7 @@ import { NewOrb, OrbUpdate } from "@/models/Orb";
 import { PolicyUpdate } from "@/models/Policy";
 import { NewSector, SectorUpdate } from "@/models/Sector";
 import { NewThread, ThreadUpdate } from "@/models/Thread";
-import { walletService } from "@/services/wallets/wallet-service";
+import { walletService } from "@/services/system/wallet/wallet-service";
 import { ChainType } from "@/types/orb";
 import { PolicyDocument } from "@/types/policy";
 import { ThreadType } from "@/types/threads";

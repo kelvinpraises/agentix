@@ -1,12 +1,12 @@
 import { RpcTarget, newHttpBatchRpcSession } from "capnweb";
 
 import { db } from "@/infrastructure/database/turso-connection";
-import { threadService } from "@/services/threads/thread-service";
+import { threadService } from "@/services/system/threads/thread-service";
 import {
   TransactionSigningError,
   WalletGenerationError,
-} from "@/services/wallets/shared/errors";
-import { validateOrbId } from "@/services/wallets/shared/providers/base-provider";
+} from "@/services/system/wallet/shared/errors";
+import { validateOrbId } from "@/services/system/wallet/shared/providers/base-provider";
 import { ChainType } from "@/types/orb";
 import {
   ISignatureResult,

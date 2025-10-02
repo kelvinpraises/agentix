@@ -5,9 +5,9 @@ import ky from "ky";
 import path from "path";
 
 import { threadRegistry } from "@/constants/thread-registry";
-import generateCapnp from "@/services/threads/workerd-capnp-generator";
 import { ManagedProcess, ThreadConfig } from "@/types/threads";
 import { createConfigHash } from "@/utils/threads";
+import generateCapnp from "./workerd-capnp-generator";
 
 const activeProcesses = new Map<string, ManagedProcess>();
 

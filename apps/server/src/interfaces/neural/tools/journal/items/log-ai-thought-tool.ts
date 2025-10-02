@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { createJournalEntry } from "@/services/trading/trade-action-service";
+import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 // Define the AI analysis and reflection types
@@ -59,7 +59,7 @@ Reflection Types (AI synthesis between phases):
     });
 
     try {
-      const entry = await createJournalEntry({
+      const entry = await tradeActionService.createJournalEntry({
         sectorId,
         tradeActionId,
         type,

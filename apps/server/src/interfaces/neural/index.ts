@@ -4,7 +4,7 @@ import { PinoLogger } from "@mastra/loggers";
 import { MCPClient } from "@mastra/mcp";
 
 import { tradingAgent } from "@/interfaces/neural/agents/trading-agent";
-import { threadService } from "@/services/threads/thread-service";
+import { threadService } from "@/services/system/threads/thread-service";
 import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContext } from "@/types/context";
 import { SectorContext } from "@/types/sector";

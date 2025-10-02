@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { tradespaceService } from "@/services/user/tradespace-service";
-import { ThreadType } from "@/types/orb";
+import { ThreadType } from "@/types/threads";
 
 interface CreateThreadRequestBody {
   orb_id: number;
