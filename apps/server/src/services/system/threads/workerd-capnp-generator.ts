@@ -1,5 +1,6 @@
-import { readFileSync } from "fs";
+import { buildSync } from "esbuild";
 import path from "path";
+import { fileURLToPath } from "url";
 
 import { ThreadProvider } from "@/types/threads";
 import {
@@ -8,14 +9,30 @@ import {
   isWalletPermission,
 } from "@/utils/permissions";
 
-/**
- * Read extension file content and escape for embedding in capnp
- */
-function readExtensionFile(filename: string): string {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function bundleExtensionFile(filename: string): string {
   const filePath = path.join(__dirname, "extensions", filename);
-  const content = readFileSync(filePath, "utf-8");
+
+  const result = buildSync({
+    entryPoints: [filePath],
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    write: false,
+    minify: false,
+    loader: { ".ts": "ts" },
+  });
+
+  const bundledCode = result.outputFiles[0].text;
+
+  console.log("✅ First 500 chars of bundled code:");
+  console.log("─".repeat(80));
+  console.log(bundledCode.substring(0, 500));
+
   // Escape backticks for embedding in capnp text literals
-  return content.replace(/`/g, "\\`");
+  return bundledCode.replace(/`/g, "\\`");
 }
 
 function generateCapnp({
@@ -93,11 +110,10 @@ function generateCapnp({
 
   const bindingsStr = bindings.length > 0 ? bindings.join(", ") : "";
 
-  // Read extension files
-  const storageImplContent = readExtensionFile("storage-impl.ts");
-  const storageBindingContent = readExtensionFile("storage-binding.ts");
-  const walletImplContent = readExtensionFile("wallet-impl.ts");
-  const walletBindingContent = readExtensionFile("wallet-binding.ts");
+  const storageImplContent = bundleExtensionFile("storage-impl.ts");
+  const storageBindingContent = bundleExtensionFile("storage-binding.ts");
+  const walletImplContent = bundleExtensionFile("wallet-impl.ts");
+  const walletBindingContent = bundleExtensionFile("wallet-binding.ts");
 
   const capnp = `
     using Workerd = import "/workerd/workerd.capnp";
