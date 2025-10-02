@@ -1,6 +1,3 @@
-// Internal implementation of storage extension
-// Uses Cap'n Web RPC to communicate with Agentix storage service
-
 import { RpcTarget, newHttpBatchRpcSession } from "capnweb";
 
 interface StorageConfig {
@@ -12,14 +9,29 @@ interface StorageConfig {
 }
 
 interface StorageRpcApi extends RpcTarget {
-  storage: {
-    getIsolatedStorage(params: { orbId: number; providerId: string }): Promise<any | null>;
-    setIsolatedStorage(params: { orbId: number; providerId: string; data: any }): Promise<void>;
-    deleteIsolatedStorage(params: { orbId: number; providerId: string }): Promise<void>;
-    getNetworkStorage(params: { sectorId: number; chain: string; providerId: string }): Promise<any | null>;
-    setNetworkStorage(params: { sectorId: number; chain: string; providerId: string; data: any }): Promise<void>;
-    deleteNetworkStorage(params: { sectorId: number; chain: string; providerId: string }): Promise<void>;
-  };
+  getIsolatedStorage(params: { orbId: number; providerId: string }): Promise<string>;
+  setIsolatedStorage(params: {
+    orbId: number;
+    providerId: string;
+    data: any;
+  }): Promise<void>;
+  deleteIsolatedStorage(params: { orbId: number; providerId: string }): Promise<void>;
+  getNetworkStorage(params: {
+    sectorId: number;
+    chain: string;
+    providerId: string;
+  }): Promise<string>;
+  setNetworkStorage(params: {
+    sectorId: number;
+    chain: string;
+    providerId: string;
+    data: any;
+  }): Promise<void>;
+  deleteNetworkStorage(params: {
+    sectorId: number;
+    chain: string;
+    providerId: string;
+  }): Promise<void>;
 }
 
 export class StorageExtension {
@@ -39,20 +51,16 @@ export class StorageExtension {
     }
   }
 
-  /**
-   * Get the entire storage_json for this scoped entity
-   * Returns null if no storage exists yet
-   */
-  async get(): Promise<any | null> {
+  async get(): Promise<string> {
     const batch = newHttpBatchRpcSession<StorageRpcApi>(this.#rpcUrl);
 
     if (this.#config.scope === "isolated") {
-      return await batch.storage.getIsolatedStorage({
+      return await batch.getIsolatedStorage({
         orbId: this.#config.orbId!,
         providerId: this.#config.providerId,
       });
     } else {
-      return await batch.storage.getNetworkStorage({
+      return await batch.getNetworkStorage({
         sectorId: this.#config.sectorId!,
         chain: this.#config.chain!,
         providerId: this.#config.providerId,
@@ -60,21 +68,17 @@ export class StorageExtension {
     }
   }
 
-  /**
-   * Set the entire storage_json for this scoped entity
-   * Replaces any existing data
-   */
-  async set(data: any): Promise<void> {
+  async set(data: string): Promise<void> {
     const batch = newHttpBatchRpcSession<StorageRpcApi>(this.#rpcUrl);
 
     if (this.#config.scope === "isolated") {
-      await batch.storage.setIsolatedStorage({
+      await batch.setIsolatedStorage({
         orbId: this.#config.orbId!,
         providerId: this.#config.providerId,
         data,
       });
     } else {
-      await batch.storage.setNetworkStorage({
+      await batch.setNetworkStorage({
         sectorId: this.#config.sectorId!,
         chain: this.#config.chain!,
         providerId: this.#config.providerId,
@@ -83,19 +87,16 @@ export class StorageExtension {
     }
   }
 
-  /**
-   * Delete storage for this scoped entity
-   */
   async delete(): Promise<void> {
     const batch = newHttpBatchRpcSession<StorageRpcApi>(this.#rpcUrl);
 
     if (this.#config.scope === "isolated") {
-      await batch.storage.deleteIsolatedStorage({
+      await batch.deleteIsolatedStorage({
         orbId: this.#config.orbId!,
         providerId: this.#config.providerId,
       });
     } else {
-      await batch.storage.deleteNetworkStorage({
+      await batch.deleteNetworkStorage({
         sectorId: this.#config.sectorId!,
         chain: this.#config.chain!,
         providerId: this.#config.providerId,
