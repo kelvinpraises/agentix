@@ -18,7 +18,7 @@ function readExtensionFile(filename: string): string {
   return content.replace(/`/g, "\\`");
 }
 
- function generateCapnp({
+function generateCapnp({
   port,
   workerSource,
   compatibilityDate,
@@ -27,6 +27,7 @@ function readExtensionFile(filename: string): string {
   orbId,
   sectorId,
   chain,
+  rpcUrl = "http://localhost:4848/rpc",
 }: {
   port: number;
   workerSource: string;
@@ -36,6 +37,7 @@ function readExtensionFile(filename: string): string {
   orbId: number;
   sectorId: number;
   chain: string;
+  rpcUrl?: string;
 }) {
   const workerConfig =
     type === "module"
@@ -58,6 +60,7 @@ function readExtensionFile(filename: string): string {
       `(name = "storageScope", text = "${storageScope}")`,
       `(name = "orbId", text = "${orbId}")`,
       `(name = "sectorId", text = "${sectorId}")`,
+      `(name = "apiBaseUrl", text = "${rpcUrl}")`,
     ];
 
     if (networkStoragePerm) {
@@ -78,6 +81,7 @@ function readExtensionFile(filename: string): string {
       `(name = "orbId", text = "${orbId}")`,
       `(name = "sectorId", text = "${sectorId}")`,
       `(name = "chain", text = "${chain}")`,
+      `(name = "apiBaseUrl", text = "${rpcUrl}")`,
     ];
 
     bindings.push(`(name = "wallet", wrapped = (
@@ -123,5 +127,4 @@ function readExtensionFile(filename: string): string {
   return capnp;
 }
 
-
-export default generateCapnp
+export default generateCapnp;
