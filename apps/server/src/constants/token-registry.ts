@@ -8,6 +8,16 @@ export interface TokenInfo {
   chain: ChainType;
 }
 
+export interface AssetInfo {
+  symbol: string;
+  name: string;
+  marketDataProviders: {
+    coingecko: string;
+    coinmarketcap?: string;
+    binance?: string;
+  };
+}
+
 export const TOKENS: TokenInfo[] = [
   // Ethereum
   {
@@ -203,3 +213,162 @@ export const TOKENS: TokenInfo[] = [
     chain: "icp",
   },
 ];
+
+/**
+ * Cross-chain asset registry for market data providers.
+ * Maps asset symbols to their IDs across different market data providers.
+ */
+export const ASSETS: Record<string, AssetInfo> = {
+  // Major Assets
+  ETH: {
+    symbol: "ETH",
+    name: "Ethereum",
+    marketDataProviders: {
+      coingecko: "ethereum",
+      coinmarketcap: "1027",
+      binance: "ETH",
+    },
+  },
+  BTC: {
+    symbol: "BTC",
+    name: "Bitcoin",
+    marketDataProviders: {
+      coingecko: "bitcoin",
+      coinmarketcap: "1",
+      binance: "BTC",
+    },
+  },
+  WBTC: {
+    symbol: "WBTC",
+    name: "Wrapped Bitcoin",
+    marketDataProviders: {
+      coingecko: "wrapped-bitcoin",
+      coinmarketcap: "3717",
+      binance: "WBTC",
+    },
+  },
+  SOL: {
+    symbol: "SOL",
+    name: "Solana",
+    marketDataProviders: {
+      coingecko: "solana",
+      coinmarketcap: "5426",
+      binance: "SOL",
+    },
+  },
+
+  // Stablecoins
+  USDC: {
+    symbol: "USDC",
+    name: "USD Coin",
+    marketDataProviders: {
+      coingecko: "usd-coin",
+      coinmarketcap: "3408",
+      binance: "USDC",
+    },
+  },
+  USDT: {
+    symbol: "USDT",
+    name: "Tether",
+    marketDataProviders: {
+      coingecko: "tether",
+      coinmarketcap: "825",
+      binance: "USDT",
+    },
+  },
+  DAI: {
+    symbol: "DAI",
+    name: "Dai",
+    marketDataProviders: {
+      coingecko: "dai",
+      coinmarketcap: "4943",
+      binance: "DAI",
+    },
+  },
+
+  // Solana Ecosystem
+  RAY: {
+    symbol: "RAY",
+    name: "Raydium",
+    marketDataProviders: {
+      coingecko: "raydium",
+      coinmarketcap: "8526",
+      binance: "RAY",
+    },
+  },
+  SRM: {
+    symbol: "SRM",
+    name: "Serum",
+    marketDataProviders: {
+      coingecko: "serum",
+      coinmarketcap: "6187",
+    },
+  },
+
+  // Layer 1s
+  SEI: {
+    symbol: "SEI",
+    name: "Sei",
+    marketDataProviders: {
+      coingecko: "sei-network",
+      coinmarketcap: "23149",
+    },
+  },
+  ATOM: {
+    symbol: "ATOM",
+    name: "Cosmos",
+    marketDataProviders: {
+      coingecko: "cosmos",
+      coinmarketcap: "3794",
+      binance: "ATOM",
+    },
+  },
+  ICP: {
+    symbol: "ICP",
+    name: "Internet Computer",
+    marketDataProviders: {
+      coingecko: "internet-computer",
+      coinmarketcap: "8916",
+      binance: "ICP",
+    },
+  },
+
+  // Hyperliquid
+  HL: {
+    symbol: "HL",
+    name: "Hyperliquid",
+    marketDataProviders: {
+      coingecko: "hyperliquid",
+    },
+  },
+
+  // ICP Ecosystem
+  ckBTC: {
+    symbol: "ckBTC",
+    name: "Chain Key Bitcoin",
+    marketDataProviders: {
+      coingecko: "chain-key-bitcoin",
+    },
+  },
+  ckETH: {
+    symbol: "ckETH",
+    name: "Chain Key Ethereum",
+    marketDataProviders: {
+      coingecko: "chain-key-ethereum",
+    },
+  },
+  CHAT: {
+    symbol: "CHAT",
+    name: "OpenChat",
+    marketDataProviders: {
+      coingecko: "openchat",
+    },
+  },
+  SONIC: {
+    symbol: "SONIC",
+    name: "Sonic",
+    marketDataProviders: {
+      coingecko: "sonic-2",
+    },
+  },
+};
