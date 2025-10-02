@@ -47,7 +47,7 @@ const rpcAdapter = createServerAdapter(rpcHandler);
 
 const router = Router();
 
-// TODO: Add authentication middleware
+// TODO: Complete authentication middleware
 router.use(protect);
 
 router.post("/storage", localhostOnly, rpcAdapter);
