@@ -1,10 +1,10 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { strategyQueue } from "@/infrastructure/queues/definitions";
+import { strategyQueue } from "@/infrastructure/queues/config";
+import { registryService } from "@/services/shared/registry-service";
 import { strategyService } from "@/services/trading/strategy-service";
 import { tradeActionService } from "@/services/trading/trade-action-service";
-import { registryService } from "@/services/shared/registry-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 
 export const enterPositionTool = createTool({
