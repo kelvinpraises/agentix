@@ -5,7 +5,7 @@ const threadCleanup = {
   start() {
     cron.schedule("*/5 * * * *", () => {
       console.log("[thread-cleanup-cron] Triggering scheduled cleanup of thread MCPs...");
-      threadService.cleanupUnusedThreadMCPs().catch((err) => {
+      threadService.cleanupUnusedThreads().catch((err) => {
         console.error("[thread-cleanup-cron] Error during scheduled thread cleanup:", err);
       });
     });

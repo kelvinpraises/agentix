@@ -40,9 +40,9 @@ export const neuralAgent = {
 
     // Pre-warm all threads for the orbs in this sector. This ensures lower latency
     // when the agent decides to use a specific orb during the analysis -> decision phase
-    const threadMCPsPorts = await Promise.all(
+    const threadPorts = await Promise.all(
       threadConfigs.map(({ orbId, sectorId, chain, providerId, config }) =>
-        threadService.getOrServeThreadMCP(orbId, sectorId, chain, providerId, config)
+        threadService.getOrServeThread(orbId, sectorId, chain, providerId, config)
       )
     );
 
@@ -53,7 +53,7 @@ export const neuralAgent = {
         const serverKey = `${orbName
           .toLowerCase()
           .replace(/\s+/g, "_")}_${type}_${providerId}`;
-        const serverUrl = new URL(`http://localhost:${threadMCPsPorts[index].port}/mcp`);
+        const serverUrl = new URL(`http://localhost:${threadPorts[index].port}/mcp`);
         return [
           serverKey,
           {
