@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { User, UserUpdate } from "@/models/User";
-import { profileService } from "@/services/user/profile-service";
+import { profileService, UserProfileWithSectors } from "@/services/user/profile-service";
 import { sanitizeUser } from "@/utils/user";
 
 interface ProfileResponse extends Omit<User, "password_hash"> {}
@@ -26,7 +26,10 @@ const profileController = {
     }
   },
 
-  async getFullProfile(req: Request, res: Response) {
+  async getFullProfile(
+    req: Request,
+    res: Response<Omit<UserProfileWithSectors, "password_hash"> | { error: string }>
+  ) {
     try {
       if (!req.user || !req.user.id) {
         res.status(401).json({ error: "Unauthorized" });
@@ -37,8 +40,7 @@ const profileController = {
         res.status(404).json({ error: "Profile not found" });
         return;
       }
-      const { password_hash, ...safeProfile } = profile;
-      res.json(safeProfile);
+      res.json(sanitizeUser(profile));
     } catch (error) {
       res.status(500).json({ error: "An error occurred while fetching the full profile." });
     }
