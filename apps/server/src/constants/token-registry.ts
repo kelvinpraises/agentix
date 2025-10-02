@@ -214,10 +214,6 @@ export const TOKENS: TokenInfo[] = [
   },
 ];
 
-/**
- * Cross-chain asset registry for market data providers.
- * Maps asset symbols to their IDs across different market data providers.
- */
 export const ASSETS: Record<string, AssetInfo> = {
   // Major Assets
   ETH: {
