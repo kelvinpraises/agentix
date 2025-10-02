@@ -2,7 +2,7 @@ import { createTool } from "@mastra/core";
 import { z } from "zod";
 
 import { strategyQueue } from "@/infrastructure/queues/config";
-import { registryService } from "@/services/shared/registry-service";
+import { tokenService } from "@/services/system/token-service";
 import { strategyService } from "@/services/trading/strategy-service";
 import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
@@ -101,7 +101,7 @@ export const enterPositionTool = createTool({
     }
 
     const tradingPair = tradingPairInfo.trading_pair;
-    const routingInfo = registryService.getRoutingInfo(
+    const routingInfo = tokenService.getRoutingInfo(
       tradingPairInfo.chain as any,
       tradingPair
     );
@@ -112,7 +112,7 @@ export const enterPositionTool = createTool({
         tradeActionId,
         type: "POSITION_ENTERED",
         content: {
-          pair: tradingPair,
+          trading_pair: tradingPair,
           amount: amount,
           chain: tradingPairInfo.chain as any,
           dex: routingInfo.isValid ? routingInfo.defaultDex : "Direct",

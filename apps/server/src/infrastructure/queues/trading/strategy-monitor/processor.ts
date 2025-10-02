@@ -2,6 +2,7 @@ import { SandboxedJob } from "bullmq";
 
 import { strategyQueue } from "@/infrastructure/queues/config";
 import { sendTradeProposal } from "@/services/system/notification-service";
+import { tokenService } from "@/services/system/token-service";
 import { marketDataService } from "@/services/trading/market-data-service";
 import * as positionMonitor from "@/services/trading/strategies/position-monitor";
 import * as rsiStrategy from "@/services/trading/strategies/rsi";
@@ -132,7 +133,7 @@ async function getTradeContext(tradeActionId: number): Promise<StrategyContext |
 
     // Use proper typing for position entry content
     const content = executionEntry.content as PositionEnteredContent;
-    if (!content.to_token) {
+    if (!content.trading_pair) {
       console.error(
         `[StrategyEngine] Invalid position entry content for trade ${tradeActionId}.`
       );
@@ -146,13 +147,16 @@ async function getTradeContext(tradeActionId: number): Promise<StrategyContext |
       return null;
     }
 
-    // Get live market data for the asset
-    const assetId = content.to_token;
+    // Parse trading pair and get base asset CoinGecko ID for market data
+    const tradingPair = content.trading_pair;
+    const assetId = tokenService.getBaseAssetId(tradingPair, "coingecko");
+
+    // Get live market data for the base asset
     const marketData = await marketDataService.getMarketData(assetId);
     const currentPrice = marketData.market_data?.current_price?.usd;
 
     if (currentPrice === undefined) {
-      console.error(`[StrategyEngine] Could not fetch price for ${assetId}.`);
+      console.error(`[StrategyEngine] Could not fetch price for ${tradingPair} (${assetId}).`);
       return null;
     }
 

@@ -1,7 +1,7 @@
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 
-import { registryService } from "@/services/shared/registry-service";
+import { tokenService } from "@/services/system/token-service";
 import { tradeActionService } from "@/services/trading/trade-action-service";
 import { AgentRuntimeContextSchema } from "@/types/context";
 import { ChainType } from "@/types/orb";
@@ -62,7 +62,7 @@ export const setTradingPairTool = createTool({
         };
       }
 
-      const chainValidation = registryService.validateAssetPair(
+      const chainValidation = tokenService.validateAssetPair(
         orbInfo.chain as ChainType,
         tradingPair
       );

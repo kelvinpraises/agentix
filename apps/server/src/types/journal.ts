@@ -227,7 +227,7 @@ export interface TradingPairSelectedContent {
 // ============================================================================
 
 export interface PositionEnteredContent {
-  pair: string;
+  trading_pair: string;
   amount: string;
   chain: ChainType;
   dex: string;
