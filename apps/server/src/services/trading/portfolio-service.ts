@@ -1,4 +1,5 @@
 import { db } from "@/infrastructure/database/turso-connection";
+
 import { PositionEnteredContent } from "@/types/journal";
 
 export const portfolioService = {
@@ -9,6 +10,13 @@ export const portfolioService = {
       .orderBy("snapshot_date", "desc")
       .selectAll()
       .execute();
+  },
+
+  async getWalletBalances(userId: number) {
+    // TODO: Implement wallet balance fetching from on-chain data
+    // This should fetch real-time balances from all orb wallets for the user
+    console.log(`TODO: Fetching wallet balances for user ${userId}...`);
+    return [];
   },
 
   async getOpenPositions(sectorId: number) {
@@ -35,10 +43,15 @@ export const portfolioService = {
       .map((entry) => {
         const content = entry.content as PositionEnteredContent;
 
+        // Parse trading pair into base/quote
+        const [base, quote] = content.trading_pair.split("/");
+
         return {
           journalId: entry.id,
           tradeActionId: entry.trade_action_id,
-          symbol: content.pair,
+          tradingPair: content.trading_pair,
+          baseAsset: base,
+          quoteAsset: quote,
           amount: parseFloat(content.amount),
           side: "buy", // Position entered implies a 'buy' action
           status: entry.trade_status, // Use the status from the trade_actions table
