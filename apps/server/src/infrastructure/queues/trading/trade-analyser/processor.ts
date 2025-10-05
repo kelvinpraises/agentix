@@ -82,10 +82,12 @@ module.exports = async (job: SandboxedJob) => {
         id: orb.id,
         name: orb.name,
         chain: orb.chain,
+        context: orb.context,
         assetPairs: orb.asset_pairs,
         threads: orb.threads.map((t) => ({
           type: t.type,
           providerId: t.provider_id,
+          description: t.description,
           config: t.config_json,
         })),
       })),
