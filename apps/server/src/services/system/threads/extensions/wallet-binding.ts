@@ -1,7 +1,7 @@
 // Binding module for wallet extension
 // This receives innerBindings from workerd and constructs the WalletExtension
 
-import { WalletExtension } from 'agentix-internal:wallet-impl';
+import { WalletExtension } from "agentix-internal:wallet-impl";
 
 interface BindingEnv {
   orbId: string;
@@ -11,7 +11,11 @@ interface BindingEnv {
 }
 
 function makeBinding(env: BindingEnv): WalletExtension {
-  const rpcUrl = env.apiBaseUrl || 'http://localhost:4848/rpc';
+  const rpcUrl = env.apiBaseUrl;
+
+  if (!rpcUrl) {
+    throw new Error("apiBaseUrl is required for wallet binding");
+  }
 
   return new WalletExtension(
     {

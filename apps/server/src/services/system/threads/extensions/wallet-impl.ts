@@ -18,7 +18,7 @@ export class WalletExtension {
   #config: WalletConfig;
   #rpcUrl: string;
 
-  constructor(config: WalletConfig, rpcUrl = "http://localhost:4848/rpc") {
+  constructor(config: WalletConfig, rpcUrl: string) {
     this.#config = config;
     this.#rpcUrl = rpcUrl;
   }
@@ -64,5 +64,9 @@ export class WalletExtension {
       ...this.#config,
       message,
     });
+  }
+
+  ping() {
+    return "echo from WalletExtension";
   }
 }

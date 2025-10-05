@@ -38,7 +38,7 @@ export class StorageExtension {
   #config: StorageConfig;
   #rpcUrl: string;
 
-  constructor(config: StorageConfig, rpcUrl = "http://localhost:4848/rpc") {
+  constructor(config: StorageConfig, rpcUrl: string) {
     this.#config = config;
     this.#rpcUrl = rpcUrl;
 
@@ -102,5 +102,9 @@ export class StorageExtension {
         providerId: this.#config.providerId,
       });
     }
+  }
+
+  ping() {
+    return "echo from StorageExtension";
   }
 }

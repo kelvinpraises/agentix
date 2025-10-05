@@ -13,7 +13,11 @@ interface BindingEnv {
 }
 
 function makeBinding(env: BindingEnv): StorageExtension {
-  const rpcUrl = env.apiBaseUrl || "http://localhost:4848/rpc";
+  const rpcUrl = env.apiBaseUrl;
+
+  if (!rpcUrl) {
+    throw new Error("apiBaseUrl is required for wallet binding");
+  }
 
   return new StorageExtension(
     {
