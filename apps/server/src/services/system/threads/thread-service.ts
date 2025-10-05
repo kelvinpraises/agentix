@@ -1,7 +1,6 @@
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import { getRandomPort } from "get-port-please";
-import ky from "ky";
 import path from "path";
 
 import { threadRegistry } from "@/constants/thread-registry";
@@ -40,17 +39,14 @@ export const threadService = {
     const capnpConfigPath = path.join(tempDir, "config.capnp");
 
     try {
-      // 1. Fetch worker script and generate and write capnp config
-      const scriptContent = await ky.get(provider.source).text();
-      const capnpContent = generateCapnp({
-        port: port,
-        workerSource: scriptContent,
-        compatibilityDate: "2025-09-26",
-        type: provider.type,
-        provider, // Pass provider for permissions
+      // 1. Generate capnp config
+      const capnpContent = await generateCapnp({
+        port,
+        provider,
         orbId,
         sectorId,
         chain,
+        rpcUrl: "http://localhost:4848/rpc",
       });
       await fs.mkdir(tempDir, { recursive: true });
       await fs.writeFile(capnpConfigPath, capnpContent);

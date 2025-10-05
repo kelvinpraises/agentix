@@ -7,3 +7,4 @@ output.txt
 .mastra
 *.db
 *.db-*
+tmp
