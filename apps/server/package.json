@@ -6,7 +6,10 @@
   "author": "kelvinpraises",
   "main": "src/server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "dev": "tsx src/server.ts --watch",
     "build": "npx tsc",
     "start": "node dist/server.js"
@@ -56,6 +59,10 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.10",
     "@types/node-cron": "^3.0.11",
-    "@types/yargs": "^17.0.33"
+    "@types/yargs": "^17.0.33",
+    "@vitest/ui": "^3.2.4",
+    "happy-dom": "^19.0.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   }
 }
