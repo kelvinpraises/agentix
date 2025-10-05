@@ -306,11 +306,16 @@ export const tradeActionService = {
   async interruptTradeAction(tradeActionId: number) {
     const schedulerId = `monitor-trade-${tradeActionId}`;
 
-    // Get sector ID from trade action
-    const sectorId = await tradeActionService.getSectorIdFromTradeAction(tradeActionId);
-    if (!sectorId) {
+    // Get the trade action to check its status first
+    const tradeAction = await tradeActionService.getTradeAction(tradeActionId);
+    if (!tradeAction) {
       throw new Error("Trade action not found or invalid");
     }
+    if (!tradeAction.is_active) {
+      throw new Error("Cannot interrupt a trade that is already completed.");
+    }
+
+    const sectorId = tradeAction.sector_id;
 
     try {
       await strategyQueue.removeJobScheduler(schedulerId);
