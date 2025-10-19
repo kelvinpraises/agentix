@@ -218,10 +218,41 @@ export async function up(db: Kysely<DB>): Promise<void> {
     .columns(["orb_id", "provider_id"])
     .unique()
     .execute();
+
+  // Strategies table - User Python backtesting strategies with embedded results
+  await db.schema
+    .createTable("strategies")
+    .addColumn("id", "integer", (col) => col.primaryKey().autoIncrement())
+    .addColumn("user_id", "integer", (col) =>
+      col.notNull().references("users.id").onDelete("cascade")
+    )
+    .addColumn("name", "text", (col) => col.notNull())
+    .addColumn(
+      "status",
+      "text",
+      (col) =>
+        col
+          .notNull()
+          .defaultTo("idle")
+          .check(sql`status IN ('idle', 'queued', 'running', 'completed', 'failed')`)
+    )
+    .addColumn("active_revision_index", "integer", (col) =>
+      col.notNull().defaultTo(0)
+    )
+    .addColumn("is_active", "integer", (col) =>
+      col.notNull().defaultTo(1)
+    ) // boolean
+    .addColumn("revisions", "text", (col) => col.notNull()) // JSON array of revisions with results
+    .addColumn("created_at", "text", (col) =>
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
+    )
+    .addColumn("updated_at", "text")
+    .execute();
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
   // Drop in reverse order to respect foreign keys
+  await db.schema.dropTable("strategies").ifExists().execute();
   await db.schema.dropTable("thread_isolated_storage").ifExists().execute();
   await db.schema.dropTable("thread_network_storage").ifExists().execute();
   await db.schema.dropTable("portfolio_snapshots").ifExists().execute();
