@@ -124,6 +124,34 @@ export interface ThreadIsolatedStorageTable {
   updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
+export interface StrategiesTable {
+  id: Generated<number>;
+  user_id: number;
+  name: string;
+  status: "idle" | "queued" | "running" | "completed" | "failed";
+  active_revision_index: number;
+  is_active: boolean;
+  revisions: JSONColumnType<Array<{
+    code: string;
+    created_at: string;
+    results: {
+      metrics: {
+        total_return: number;
+        sharpe_ratio: number;
+        max_drawdown: number;
+        win_rate: number;
+        total_trades: number;
+      } | null;
+      html_report: string | null;
+      error_message: string | null;
+      started_at: string | null;
+      completed_at: string | null;
+    } | null;
+  }>>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
+}
+
 export interface DB {
   users: UsersTable;
   sectors: SectorsTable;
@@ -136,4 +164,5 @@ export interface DB {
   portfolio_snapshots: PortfolioSnapshotsTable;
   thread_network_storage: ThreadNetworkStorageTable;
   thread_isolated_storage: ThreadIsolatedStorageTable;
+  strategies: StrategiesTable;
 }
